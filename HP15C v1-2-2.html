@@ -1,0 +1,7213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Custom HP-Style Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+  .state-btn {
+    background: #2b2b3b;
+    color: white;
+    border: 1px solid #3f4652;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.state-btn:hover {
+    background: #3a4050;
+}
+  :root {
+    --calc-width: 720px;   /* medium fixed size */
+    --aspect-ratio: 1.32;   /* width / height */
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #101015;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .calc-wrapper {
+    width: var(--calc-width);
+    max-width: 95vw;
+    position: relative;
+  }
+  .calc-wrapper::before {
+    content: "";
+    display: block;
+    padding-top: calc(100% / var(--aspect-ratio)); /* fixed ratio */
+  }
+  .calc {
+    position: absolute;
+    inset: 0;
+    background: #1b1d22;
+    border-radius: 22px;
+    padding: 24px 24px 18px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.85);
+    border: 2px solid #3f4652;
+    display: flex;
+    flex-direction: column;
+  }
+  .branding {
+    display: flex;
+    justify-content: space-between;
+    color: #e0e0e0;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .branding .model {
+    font-weight: 600;
+    letter-spacing: 1.2px;
+  }
+  .display {
+    background: #050608;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    border: 1px solid #333a45;
+    color: #9dfc9d;
+    font-family: "Courier New", monospace;
+  }
+  .display-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .display-line span.label {
+    color: #7a8694;
+    margin-right: 6px;
+  }
+  .display-line span.value {
+    min-width: 180px;
+    text-align: right;
+  }
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #b0b7c3;
+    margin-top: 6px;
+  }
+  .keys {
+    margin-top: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr); /* even columns */
+    gap: 7px;
+    margin-bottom: 30px;
+  }
+  .key {
+    position: relative;
+    background: #262a33;
+    border-radius: 12px;          /* rounded tall keys */
+    padding: 10px 4px 20px;       /* tall */
+    text-align: center;
+    color: #f5f5f5;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #3f4652;
+    user-select: none;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.7);
+    transition: background 0.1s, transform 0.05s, box-shadow 0.05s;
+  }
+  .key:active {
+    background: #343a46;
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.7);
+  }
+  .key-main {
+    display: block;
+    font-size: 17px;
+  }
+  .key-op {
+    background: #3b2b2b;
+  }
+  .key-enter {
+ padding-top:14px;
+  padding-bottom: 14px;
+    background: #2b3b4f;
+  }
+  .key-on {
+    background: #355835;
+    font-size: 14px;
+  }
+  .key-mode {
+    background: #2b2b3b;
+  }
+.key-f {
+  background: #f7c94b;   /* HP Voyager gold */
+  color: #000;           /* dark text for contrast */
+}
+.display.off {
+  background: #000 !important;
+}
+/*  Force ALL text inside display to go black */
+.display.off * {
+  color: #000 !important;
+}
+.key-g {
+  background: #6bb7ff;   /* HP Voyager blue */
+  color: #000;           /* dark text for contrast */
+}
+  @media (max-width: 600px) {
+    :root {
+      --calc-width: 95vw;
+    }
+    .display-line span.value {
+      min-width: 140px;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Custom HP-Style Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+  .state-btn {
+    background: #2b2b3b;
+    color: white;
+    border: 1px solid #3f4652;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+<div id="stateButtons" style="
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:12px;
+">
+    <button class="state-btn"
+            onclick="exportStateFile()">
+        SAVE JSON
+    </button>
+
+    <button class="state-btn"
+            onclick="document.getElementById('loadStateFile').click()">
+        LOAD JSON
+    </button>
+
+    <input
+        id="loadStateFile"
+        type="file"
+        accept=".json"
+        style="display:none"
+    >
+</div>
+
+.state-btn:hover {
+    background: #3a4050;
+}
+  :root {
+    --calc-width: 720px;   /* medium fixed size */
+    --aspect-ratio: 1.32;   /* width / height */
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #101015;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .calc-wrapper {
+    width: var(--calc-width);
+    max-width: 95vw;
+    position: relative;
+  }
+  .calc-wrapper::before {
+    content: "";
+    display: block;
+    padding-top: calc(100% / var(--aspect-ratio)); /* fixed ratio */
+  }
+  .calc {
+    position: absolute;
+    inset: 0;
+    background: #1b1d22;
+    border-radius: 22px;
+    padding: 24px 24px 18px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.85);
+    border: 2px solid #3f4652;
+    display: flex;
+    flex-direction: column;
+  }
+  .branding {
+    display: flex;
+    justify-content: space-between;
+    color: #e0e0e0;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .branding .model {
+    font-weight: 600;
+    letter-spacing: 1.2px;
+  }
+  .display {
+    background: #050608;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    border: 1px solid #333a45;
+    color: #9dfc9d;
+    font-family: "Courier New", monospace;
+  }
+  .display-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .display-line span.label {
+    color: #7a8694;
+    margin-right: 6px;
+  }
+  .display-line span.value {
+    min-width: 180px;
+    text-align: right;
+  }
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #b0b7c3;
+    margin-top: 6px;
+  }
+  .keys {
+    margin-top: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr); /* even columns */
+    gap: 7px;
+    margin-bottom: 30px;
+  }
+  .key {
+    position: relative;
+    background: #262a33;
+    border-radius: 12px;          /* rounded tall keys */
+    padding: 10px 4px 20px;       /* tall */
+    text-align: center;
+    color: #f5f5f5;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #3f4652;
+    user-select: none;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.7);
+    transition: background 0.1s, transform 0.05s, box-shadow 0.05s;
+  }
+  .key:active {
+    background: #343a46;
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.7);
+  }
+  .key-main {
+    display: block;
+    font-size: 17px;
+  }
+  .key-op {
+    background: #3b2b2b;
+  }
+  .key-enter {
+ padding-top:14px;
+  padding-bottom: 14px;
+    background: #2b3b4f;
+  }
+  .key-on {
+    background: #355835;
+    font-size: 14px;
+  }
+  .key-mode {
+    background: #2b2b3b;
+  }
+.key-f {
+  background: #f7c94b;   /* HP Voyager gold */
+  color: #000;           /* dark text for contrast */
+}
+.display.off {
+  background: #000 !important;
+}
+/*  Force ALL text inside display to go black */
+.display.off * {
+  color: #000 !important;
+}
+.key-g {
+  background: #6bb7ff;   /* HP Voyager blue */
+  color: #000;           /* dark text for contrast */
+}
+  @media (max-width: 600px) {
+    :root {
+      --calc-width: 95vw;
+    }
+    .display-line span.value {
+      min-width: 140px;
+    }
+  }
+
+</style>
+
+
+
+
+
+<div id="programDisplay" style="
+  font-size:12px;
+  color:#9dfc9d;
+  margin-top:6px;
+"></div>
+
+<div id="matrixEditor" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#000c;
+  justify-content:center;
+  align-items:center;
+">
+
+  <div style="background:#1b1d22; padding:20px; border-radius:10px;">
+    <h3 style="color:white">Matrix Editor (A)</h3>
+    <div id="matrixGrid"></div>
+    <button onclick="saveMatrix()">Save</button>
+    <button onclick="closeMatrix()">Cancel</button>
+  </div>
+</div>
+
+<div id="stateButtons" style="
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:12px;
+">
+    <button onclick="exportStateFile()">SAVE JSON</button>
+    <button onclick="document.getElementById('loadStateFile').click()">
+        LOAD JSON
+    </button>
+    <input
+        id="loadStateFile"
+        type="file"
+        accept=".json"
+        style="display:none"
+    >
+</div>
+<input
+    id="loadStateFile"
+    type="file"
+    accept=".json"
+    style="display:none"
+/>
+
+<div class="calc-wrapper">
+  <div class="calc">
+    <div class="branding">
+      <div class="brand">Milan Greenman</div>
+      <div class="model">HP-15C style</div>
+    </div>
+
+<div class="display" id="display">
+      <div class="display-line">
+        <span class="label">T</span><span class="value" id="dispT">0</span>
+      </div>
+      <div class="display-line">
+        <span class="label">Z</span><span class="value" id="dispZ">0</span>
+      </div>
+      <div class="display-line">
+        <span class="label">Y</span><span class="value" id="dispY">0</span>
+      </div>
+      <div class="display-line">
+        <span class="label">X</span><span class="value" id="dispX">0</span>
+      </div>
+      <div class="status-bar">
+        <span id="statusMode">RPN  |  CUSTOM</span>
+        <span id="statusUser"></span>
+        <span id="statusFlags">DEG  |  f:OFF g:OFF</span>
+      </div>
+    </div>
+
+    <div class="keys">
+      <!-- Row 1: sqrt, e^x, 10^x, y^x, 1/x, CHS, 7, 8, 9, / -->
+      <div class="row">
+        <button class="key" onmousedown="startMatrixPreview('A')" onmouseup="endMatrixPreview()" onmouseleave="endMatrixPreview()" onclick="pressKey(1,1)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">A</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">A</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">x²</span><span class="key-main">√x</span></button>
+        <button class="key" onmousedown="startMatrixPreview('B')" onmouseup="endMatrixPreview()" onmouseleave="endMatrixPreview()" onclick="pressKey(1,2)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">B</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">B</B></span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">LN</span><span class="key-main">eˣ</span></button>
+        <button class="key" onmousedown="startMatrixPreview('C')" onmouseup="endMatrixPreview()" onmouseleave="endMatrixPreview()" onclick="pressKey(1,3)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">C</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">C</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">LOG</span><span class="key-main">10ˣ</span></button>
+        <button class="key" onmousedown="startMatrixPreview('D')" onmouseup="endMatrixPreview()" onmouseleave="endMatrixPreview()" onclick="pressKey(1,4)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">D</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">D</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">%</span><span class="key-main">yˣ</span></button>
+        <button class="key" onmousedown="startMatrixPreview('E')" onmouseup="endMatrixPreview()" onmouseleave="endMatrixPreview()" onclick="pressKey(1,5)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">E</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">E</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">△%</span><span class="key-main">1/x</span></button>
+        <button class="key" onclick="pressKey(1,6)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">MATRIX</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">ABS</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">M</span><span class="key-main">CHS</span></button>
+        <button class="key" onclick="pressKey(1,7)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">FIX</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">DEG</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">7</span><span class="key-main">7</span></button>
+        <button class="key" onclick="pressKey(1,8)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">SCI</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">RAD</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">8</span><span class="key-main">8</span></button>
+        <button class="key" onclick="pressKey(1,9)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">ENG</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">GRD</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">9</span><span class="key-main">9</span></button>
+        <button class="key key-op" onclick="pressKey(1,0)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">SOLVE</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">x≤y</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">/</span><span class="key-main">÷</span></button>
+      </div>
+
+      <!-- Row 2: SST, GTO, SIN, COS, TAN, EEX, 4, 5, 6, * -->
+      <div class="row">
+        <button class="key key-mode" onclick="pressKey(2,1)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">LBL</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">X</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">BST</span><span class="key-main">SST</span></button>
+        <button class="key key-mode" onclick="pressKey(2,2)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">HYP</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">Y</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">HYP⁻¹</span><span class="key-main">GTO</span></button>
+        <button class="key" onclick="pressKey(2,3)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">DIM</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">Z</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">SIN⁻¹</span><span class="key-main">SIN</span></button>
+        <button class="key" onmousedown="startViewIM()" onmouseup="endViewIM()" onmouseleave="endViewIM()" onclick="pressKey(2,4)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">(i)</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">I</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">COS⁻¹</span><span class="key-main">COS</span></button>
+        <button class="key" onclick="pressKey(2,5)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">I</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">T</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">TAN⁻¹</span><span class="key-main">TAN</span></button>
+        <button class="key" onclick="pressKey(2,6)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">RESULT</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">P</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">π</span><span class="key-main">EEX</span></button>
+        <button class="key" onclick="pressKey(2,7)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">X↔</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">4</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">SF</span><span class="key-main">4</span></button>
+        <button class="key" onclick="pressKey(2,8)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">DSE</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">5</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">CF</span><span class="key-main">5</span></button>
+        <button class="key" onclick="pressKey(2,9)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">ISG</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">6</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">F?</span><span class="key-main">6</span></button>
+        <button class="key key-op" onclick="pressKey(2,0)"><span style="position:absolute; top:-24px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:18px;">∫ˣᵧ</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">*</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">x=0</span><span class="key-main">×</span></button>
+      </div>
+
+      <!-- Row 3: R/S, GSB, R(dn), X<>Y, <-, enter, 1, 2, 3, - -->
+      <div class="row">
+        <button class="key key-mode" onclick="pressKey(3,1)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">PSE</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">Q</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">P/R</span><span class="key-main">R/S</span></button>
+        <button class="key key-mode" onclick="pressKey(3,2)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">Σ</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">W</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">RTN</span><span class="key-main">GSB</span></button>
+        <button class="key" onclick="pressKey(3,3)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">PRGM</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">U</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">R↑</span><span class="key-main">R↓</span></button>
+        <button class="key" onclick="pressKey(3,4)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">REG</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">K</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">RND</span><span class="key-main">x↔y</span></button>
+        
+<button class="key" onmousedown="startPrefixHold()" onmouseup="endPrefixHold()" onmouseleave="endPrefixHold()" onclick="pressKey(3,5)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">PREFIX</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:16px;">←</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">CLX</span><span class="key-main">←</span></button>
+  <!-- ⭐ REQUIRED PLACEHOLDER FOR COLUMN 6 ⭐ -->
+  <div></div>
+        <button class="key" onclick="pressKey(3,7)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">→R</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">1</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">→P</span><span class="key-main">1</span></button>
+        <button class="key" onclick="pressKey(3,8)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">→H.MS</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">2</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">→H</span><span class="key-main">2</span></button>
+        <button class="key" onclick="pressKey(3,9)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">→RAD</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">3</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">→DEG</span><span class="key-main">3</span></button>
+        <button class="key key-op" onclick="pressKey(3,0)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">Re↔Im</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">-</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">TEST</span><span class="key-main">−</span></button>
+      </div>
+
+      <!-- Row 4: on, F, G, STO, RCL, enter, 0, ., Sum+, + -->
+<div class="row">
+  <button class="key key-on" onclick="pressKey(4,1)"><span class="key-main">ON</span></button>
+  <button class="key key-mode key-f" onclick="pressKey(4,2)"><span class="key-main">f</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">F</span></button>
+  <button class="key key-mode key-g" onclick="pressKey(4,3)"><span class="key-main">g</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">G</span></button>
+  <button class="key key-mode" onclick="pressKey(4,4)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">FRAC</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">S</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">INT</span><span class="key-main">STO</span></button>
+  <button class="key key-mode" onclick="pressKey(4,5)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">USER</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">R</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">MEM</span><span class="key-main">RCL</span></button>
+  <button class="key key-enter" style="grid-row: span 2; grid-column: 6;" onclick="pressKey(4,6)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">RAN#</span><span style="position:absolute; bottom:-20px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:22px;">↵</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">LSTX</span><span class="key-main">ENTER</span></button>
+  <button class="key" onclick="pressKey(4,7)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">x!</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">0</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">x̅</span><span class="key-main">0</span></button>
+  <button class="key" onclick="pressKey(4,8)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">ŷ,r</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">.</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">s</span><span class="key-main">.</span></button>
+  <button class="key" onclick="pressKey(4,9)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">L.R.</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">L</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">Σ-</span><span class="key-main">Σ+</span></button>
+  <button class="key key-op" onclick="pressKey(4,0)"><span style="position:absolute; top:-16px; left:50%; transform:translateX(-50%); color:#f7c94b; font-size:13px;">Py,x</span><span style="position:absolute; bottom:-12px; left:80%; transform:translateX(50%); color:#6e6e6e; font-size:11px;">+</span><span style="position:absolute; top:36px; left:50%; transform:translateX(-50%); color:#6bb7ff; font-size:13px;">Cy,x</span><span class="key-main">+</span></button>
+</div>
+<div id="flagPanel" style="
+  margin-top: 10px;
+  color: #9dfc9d;
+  font-family: monospace;
+  text-align: center;
+"></div>
+
+<div id="registerPanel" style="
+  margin-top: 10px;
+  color: #6bb7ff;
+  font-family: monospace;
+  text-align: left;
+"></div>
+    </div>
+  </div>
+</div>
+
+<div id="registerPanel" style="
+  margin-top: 18px;
+  color: #6bb7ff;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+"></div>
+
+<script>
+let pendingCommand = "";
+let displayMode = "NORMAL"; // NORMAL | FIX
+let fixDigits = 4;          // default like HP-ish
+let powerOn = true;
+let entering = false;
+let inputBuffer = "";
+let justCalculated = false;
+let angleMode = "DEG";   //  REQUIRED
+let rngSeed = 0;  // HP default
+let pendingRegister = null;
+let registerDecimal = false;
+let liftOnNextDigit = false;
+let continueEntry = false;
+let prefixDisplay = "";
+let prefixHold = false;
+let currentMatrixName = null;
+let viewIM = false;
+let viewIMTimer = null;
+let USER = false;
+let pendingResultTarget = false;
+let matrixResultTarget = "C"; // default
+let matrixEntryMode = false;
+let matrixEntryTarget = null;   // "A"–"E"
+let matrixEntryIndex = 0;
+let lastMatrixKey = null;
+let matrixStorePreview = null;
+let callStack = [];
+let pendingMatrixRecall = false;
+let pendingMatrixOp = null;
+let runMode = true;
+let programMode=false;
+let programLabel = "";
+let state = "IDLE";
+let buildBuffer = [];
+let labelMode = false;
+let programStart = "";
+let execPC = 0;
+let execRunning = false;
+let DoIfTrue = true;
+let pendingGotoLine = false;
+let gotoBuffer = "";
+let pendingGotoLineEdit = false;
+let gotoLineBuffer = "";
+let displayError = "";
+let execPauseUntil = 0;
+let programJumped = false;
+
+const REG_I = 66;
+const prefixOps = [
+  "dim",
+  "matrix_mode",
+  "result",
+  "lbl",
+  "gto",
+  "gsb",
+  "fix",
+  "SF",
+  "CF",
+  "FS",
+  "test"
+];
+
+function formatInstruction(i){
+  if(i.op==="digit") return `NUM ${i.v}`;
+  return i.op.toUpperCase();
+}
+
+function startPrefixHold() {
+  //  ONLY allow mantissa view if coming from f-shift
+  if (!shiftF) return;
+  prefixHold = true;
+  updateDisplay();
+}
+function endPrefixHold() {
+  prefixHold = false;
+  updateDisplay();
+}
+
+function startViewIM() {
+  //  ONLY activate if f-shift is active
+  if (!shiftF) return;
+  viewIM = true;
+  if (viewIMTimer) {
+    clearTimeout(viewIMTimer);
+    viewIMTimer = null;
+  }
+  updateDisplay();
+}
+
+function endViewIM() {
+  // Start 2-second delay after release
+  viewIMTimer = setTimeout(() => {
+    viewIM = false;
+    updateDisplay();
+  }, 2000);
+}
+
+
+/* =========================
+   CORE STRUCTURES
+========================= */
+// Stack (X,Y,Z,T)
+let S = { X:0, Y:0, Z:0, T:0 };
+let IM = { X:0, Y:0, Z:0, T:0 };
+let lastX = 0;
+let lastIMX = 0;
+// Flags (F0-F9)
+let F = Array(10).fill(false);
+// Registers (0–9)
+let R = Array(67).fill(0);
+// Matrix storage (A–E like 15C)
+let M = {
+  A: null,
+  B: null,
+  C: null,
+  D: null,
+  E: null
+};
+
+// Modes
+let shiftF=false, shiftG=false;
+let hypMode = false;
+let iHypMode = false;
+const MAX_STEPS = 1000;
+let prog = new Array(MAX_STEPS).fill(null);
+let pc = 0;              // program counter
+let progSize = 0;        // highest written step
+let labels={};
+
+/* =========================
+   STACK OPS
+========================= */
+
+function push(x){
+  S.T=S.Z; S.Z=S.Y; S.Y=S.X; S.X=x;
+  IM.T=IM.Z; IM.Z=IM.Y; IM.Y=IM.X;
+}
+
+function drop(){
+  S.X=S.Y; S.Y=S.Z; S.Z=S.T;
+  IM.X=IM.Y; IM.Y=IM.Z; IM.Z=IM.T;
+}
+
+/* =========================
+   MATRIX ENGINE
+========================= */
+function bin(op){
+  const a = S.Y;
+  const b = S.X;
+  //  MATRIX PATH
+  if (isMatrix(a) || isMatrix(b)) {
+    let A = isMatrix(a) ? M[a.name] : a;
+    let B = isMatrix(b) ? M[b.name] : b;
+    let result;
+    if (op === "add") result = matrixAdd(A, B);
+    else if (op === "sub") result = matrixSub(A, B);
+    else if (op === "mul") result = matrixMul(A, B);
+
+else if (op === "div") {
+  const aIsMatrix = isMatrix(a);
+  const bIsMatrix = isMatrix(b);
+  // ✅ MATRIX ÷ MATRIX
+  if (aIsMatrix && bIsMatrix) {
+    let A = M[a.name];
+    let B = M[b.name];
+
+// ✅ basic validation (ONLY square check remains)
+if (!A || !B || B.rows !== B.cols) {
+  S.X = NaN;
+  return;
+}
+
+let invB = matrixInverse(B);
+if (!invB) {
+  S.X = NaN;
+  return;
+}
+let result = null;
+// ✅ FIRST: try Y × X⁻¹
+if (A.cols === invB.rows) {
+  result = matrixMul(A, invB);
+}
+// ✅ SECOND: try X⁻¹ × Y  (THIS FIXES YOUR CASE)
+else if (invB.cols === A.rows) {
+  result = matrixMul(invB, A);
+}
+// ✅ neither worked
+if (!result) {
+  S.X = NaN;
+  return;
+}
+// ✅ HP behavior
+drop();
+storeMatrixResult(result);
+    justCalculated = true;
+    liftOnNextDigit = true;
+    return;
+  }
+  // ✅ MATRIX ÷ SCALAR
+  if (aIsMatrix && !bIsMatrix) {
+    let A = M[a.name];
+    let scalar = b;
+    if (scalar === 0) {
+      S.X = NaN;
+      return;
+    }
+    let result = {
+      rows: A.rows,
+      cols: A.cols,
+      data: A.data.map(v => v / scalar)
+    };
+    drop();
+    storeMatrixResult(result);
+    return;
+  }
+  // ✅ SCALAR ÷ MATRIX
+  if (!aIsMatrix && bIsMatrix) {
+    let scalar = a;
+    let B = M[b.name];
+    if (!B || B.rows !== B.cols) {
+      S.X = NaN;
+      return;
+    }
+    let invB = matrixInverse(B);
+    if (!invB) {
+      S.X = NaN;
+      return;
+    }
+    let result = {
+      rows: invB.rows,
+      cols: invB.cols,
+      data: invB.data.map(v => scalar * v)
+    };
+    drop();
+    storeMatrixResult(result);
+    return;
+  }
+}
+
+// ✅ Only run if result exists (add/sub/mul path)
+if (result && result.rows) {
+  drop();
+  storeMatrixResult(result);
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+return;
+  }
+  //  SCALAR / COMPLEX PATH (PUT BACK INSIDE)
+  let ca = complex(S.Y, IM.Y);
+  let cb = complex(S.X, IM.X);
+  drop();
+  let r;
+  if (op === "add") r = cAdd(ca,cb);
+  else if (op === "sub") r = cSub(ca,cb);
+  else if (op === "mul") r = cMul(ca,cb);
+  else if (op === "div") r = cDiv(ca,cb);
+  setX(r);
+}
+
+function matrixAdd(A, B){
+  if (typeof A === "number") {
+    return matrixScalarAdd(B, A);
+  }
+  if (typeof B === "number") {
+    return matrixScalarAdd(A, B);
+  }
+  if (A.rows !== B.rows || A.cols !== B.cols){
+    return NaN;
+  }
+  return {
+    rows: A.rows,
+    cols: A.cols,
+    data: A.data.map((v,i)=>v + B.data[i])
+  };
+}
+
+function matrixSub(A, B){
+  if (typeof B === "number") {
+    return {
+      rows: A.rows,
+      cols: A.cols,
+      data: A.data.map(v => v - B)
+    };
+  }
+  if (typeof A === "number") {
+    return {
+      rows: B.rows,
+      cols: B.cols,
+      data: B.data.map(v => A - v)
+    };
+  }
+  if (A.rows !== B.rows || A.cols !== B.cols){
+    return NaN;
+  }
+  return {
+    rows: A.rows,
+    cols: A.cols,
+    data: A.data.map((v,i) => v - B.data[i])
+  };
+}
+
+function matrixMul(A, B){
+  if (typeof A === "number") {
+    return {
+      rows: B.rows,
+      cols: B.cols,
+      data: B.data.map(v => A * v)
+    };
+  }
+  if (typeof B === "number") {
+    return {
+      rows: A.rows,
+      cols: A.cols,
+      data: A.data.map(v => v * B)
+    };
+  }
+  if (A.cols !== B.rows){
+    return null;
+  }
+  let result = {
+    rows: A.rows,
+    cols: B.cols,
+    data: []
+  };
+  for (let r = 0; r < A.rows; r++){
+    for (let c = 0; c < B.cols; c++){
+      let sum = 0;
+      for (let k = 0; k < A.cols; k++){
+        sum += A.data[r*A.cols + k] * B.data[k*B.cols + c];
+      }
+      result.data[r * B.cols + c] = sum;
+    }
+  }
+  return result; //  ONLY RETURN
+}
+
+function matrixInverse(A){
+  //  must be square
+  if (A.rows !== A.cols) return null;
+  let n = A.rows;
+  let Mx = [];
+  let I = [];
+  //  Step 1: build working matrix and identity
+  for (let i = 0; i < n; i++){
+    Mx[i] = [];
+    I[i] = [];
+    for (let j = 0; j < n; j++){
+      Mx[i][j] = A.data[i * n + j];
+      I[i][j] = (i === j) ? 1 : 0;
+    }
+  }
+  //  Step 2: Gauss‑Jordan elimination
+  for (let i = 0; i < n; i++){
+
+let pivot = Mx[i][i];
+
+// ✅ PARTIAL PIVOTING (HP behavior)
+if (pivot === 0) {
+  let swapRow = -1;
+
+  for (let r = i + 1; r < n; r++) {
+    if (Mx[r][i] !== 0) {
+      swapRow = r;
+      break;
+    }
+  }
+
+  if (swapRow === -1) return null; // truly singular
+
+  // swap rows in BOTH matrices
+  [Mx[i], Mx[swapRow]] = [Mx[swapRow], Mx[i]];
+  [I[i], I[swapRow]] = [I[swapRow], I[i]];
+  pivot = Mx[i][i];
+}
+    // normalize row
+    for (let j = 0; j < n; j++){
+      Mx[i][j] /= pivot;
+      I[i][j] /= pivot;
+    }
+    // eliminate other rows
+    for (let k = 0; k < n; k++){
+      if (k !== i){
+        let factor = Mx[k][i];
+        for (let j = 0; j < n; j++){
+          Mx[k][j] -= factor * Mx[i][j];
+          I[k][j] -= factor * I[i][j];
+        }
+      }
+    }
+  }
+  //  flatten result
+  return {
+    rows: n,
+    cols: n,
+    data: I.flat()
+  };
+}
+
+function clearAllMatrices() {
+  //  FULL reset of all matrix slots
+  for (let name of ["A","B","C","D","E"]) {
+    M[name] = {
+      rows: 0,
+      cols: 0,
+      data: []
+    };
+  }
+  //  Exit matrix entry mode
+  matrixEntryMode = false;
+  matrixEntryTarget = null;
+  //  Clear preview / tracking
+  matrixStorePreview = null;
+  lastMatrixKey = null;
+  //  Reset result routing (important!)
+  matrixResultTarget = "C";
+  //  Reset command system
+  pendingCommand = null;
+  prefixDisplay = "";
+  //  Reset entry state
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  console.log("All matrices cleared");
+}
+
+function getMatrixPosition(m, index) {
+  let row = Math.floor(index / m.cols) + 1;
+  let col = (index % m.cols) + 1;
+  return { row, col };
+}
+
+function startMatrixPreview(name) {
+  let isSTO = (pendingCommand === "STO" && matrixEntryMode);
+let isRCL =
+  pendingMatrixRecall ||
+  pendingCommand === "RCL";
+  if (!isSTO && !isRCL) return;
+  let m = M[name];
+  if (!m || !m.rows || !m.cols) return;
+  let index = getMatrixIndexFromR(m);
+  if (index < 0) return;
+  let pos = getMatrixPosition(m, index);
+  matrixStorePreview = {
+    name,
+    row: pos.row,
+    col: pos.col
+  };
+  updateDisplay();
+}
+
+function endMatrixPreview() {
+  //  If doing RCL MATRIX → commit on release
+  if (pendingMatrixRecall && matrixStorePreview) {
+    let name = matrixStorePreview.name;
+    let m = M[name];
+    if (m && m.rows && m.cols) {
+      let idx = getMatrixIndexFromR(m);
+      if (idx >= 0) {
+        //  EXACT behavior you described
+        push(S.X);
+        S.X = m.data[idx];
+        stepMatrixPointer(m);
+      } else {
+        S.X = NaN;
+      }
+    }
+    //  clear recall mode
+    pendingMatrixRecall = false;
+    pendingCommand = null;
+    entering = false;
+    inputBuffer = "";
+    liftOnNextDigit = true;
+  }
+  //  always clear preview
+  matrixStorePreview = null;
+  updateDisplay();
+}
+
+function storeMatrixResult(result) {
+  let target = matrixResultTarget || "C";
+  //  Dimension is automatically set by result object
+  M[target] = {
+    rows: result.rows,
+    cols: result.cols,
+    data: [...result.data]
+  };
+  //  Return reference
+  S.X = matrixRef(target);
+}
+
+function matrixScalarAdd(M, scalar) {
+  return {
+    rows: M.rows,
+    cols: M.cols,
+    data: M.data.map(v => v + scalar)
+  };
+}
+
+function matrixRef(name){
+  return { type: "matrix", name };
+}
+
+function isMatrix(x){
+  return x && x.type === "matrix";
+}
+
+function getMatrixIndexFromR(m) {
+  const r = Math.floor(R[0]) - 1; // R0 = row
+  const c = Math.floor(R[1]) - 1; // R1 = col
+  if (r < 0 || c < 0 || r >= m.rows || c >= m.cols) {
+    return -1; // out of bounds
+  }
+  return r * m.cols + c;
+}
+function stepMatrixPointer(m) {
+  //  advance column first (row-major)
+  R[1]++;
+  if (R[1] > m.cols) {
+    R[1] = 1;
+    R[0]++;
+  }
+  if (R[0] > m.rows) {
+    R[0] = 1; // wrap like HP
+  }
+}
+
+// f MATRIX 2
+function ZpairedToZaugmented() {
+  let x = S.X;
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let name = x.name;
+  let A = M[name];
+  if (!A || !A.rows || !A.cols) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ must be even rows
+  if (A.rows % 2 !== 0) {
+    S.X = NaN;
+    return;
+  }
+  let n = A.rows / 2;  // complex rows
+  let m = A.cols;      // complex columns
+  let size = 2 * n;
+  let result = {
+    rows: size,
+    cols: size,
+    data: new Array(size * size).fill(0)
+  };
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < m; c++) {
+      let re = A.data[r * m + c];
+      let im = A.data[(r + n) * m + c];
+      let r0 = r;
+      let r1 = r + n;
+      let c0 = c;
+      let c1 = c + m;
+      // A block
+      result.data[r0 * size + c0] = re;
+      result.data[r0 * size + c1] = -im;
+      result.data[r1 * size + c0] = im;
+      result.data[r1 * size + c1] = re;
+    }
+  }
+  M[name] = result;
+  S.X = matrixRef(name);
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f MATRIX 3 (inverse of MATRIX 2)
+function ZaugemntedToZpaired() {
+  let x = S.X;
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let name = x.name;
+  let A = M[name];
+  if (!A || !A.rows || !A.cols) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ must be even rows and even columns
+  if (A.rows % 2 !== 0 || A.cols % 2 !== 0) {
+    S.X = NaN;
+    return;
+  }
+  let m = A.rows / 2;
+  let n = A.cols / 2;
+  let result = {
+    rows: 2 * m,
+    cols: n,
+    data: new Array((2 * m) * n)
+  };
+  // ✅ extract A and B from block matrix
+  for (let r = 0; r < m; r++) {
+    for (let c = 0; c < n; c++) {
+      let re = A.data[r * (2*n) + c];        // top-left
+      let im = A.data[(r + m) * (2*n) + c];  // bottom-left
+      // store back in partitioned form
+      result.data[r * n + c] = re;           // top half
+      result.data[(r + m) * n + c] = im;     // bottom half
+    }
+  }
+  // ✅ overwrite same matrix
+  M[name] = result;
+  S.X = matrixRef(name);
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f MATRIX 4
+function transpose() {
+  let x = S.X;
+  // Must be a matrix reference in X
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let name = x.name;
+  let A = M[name];
+  if (!A || !A.rows || !A.cols) {
+    S.X = NaN;
+    return;
+  }
+  let newData = new Array(A.data.length);
+  // Build transposed data
+  for (let r = 0; r < A.rows; r++) {
+    for (let c = 0; c < A.cols; c++) {
+      let src = r * A.cols + c;
+      let dst = c * A.rows + r;
+      newData[dst] = A.data[src];
+    }
+  }
+  //  OVERWRITE ORIGINAL MATRIX
+  M[name] = {
+    rows: A.cols,
+    cols: A.rows,
+    data: newData
+  };
+  //  Leave S.X pointing to same matrix name
+  // (no stack lift, no drop)
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f MATRIX 5  y transpose times x /////////////
+function yTransposeX(){
+  let y = S.Y;
+  let x = S.X;
+  // ✅ Ensure both are matrix refs
+  if (!isMatrix(y) || !isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let Ymat = M[y.name];
+  let Xmat = M[x.name];
+  // ✅ Validate matrices exist
+  if (!Ymat || !Xmat || !Ymat.rows || !Ymat.cols || !Xmat.rows || !Xmat.cols) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ Build Y^T (transpose of Y)
+  let Yt = {
+    rows: Ymat.cols,
+    cols: Ymat.rows,
+    data: new Array(Ymat.data.length)
+  };
+  for (let r = 0; r < Ymat.rows; r++) {
+    for (let c = 0; c < Ymat.cols; c++) {
+      let src = r * Ymat.cols + c;
+      let dst = c * Ymat.rows + r;
+      Yt.data[dst] = Ymat.data[src];
+    }
+  }
+  // ✅ Multiply Y^T × X
+  let result = matrixMul(Yt, Xmat);
+  if (!result || !result.rows) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ Drop one level (binary op behavior)
+  drop();
+  // ✅ Store in result matrix (C default or selected)
+  storeMatrixResult(result);
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f MATRIX 6 /////////////
+function residual() {
+  let y = S.Y; // A
+  let x = S.X; // x
+  // ✅ must be matrices
+  if (!isMatrix(y) || !isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let A = M[y.name];
+  let Xv = M[x.name];
+  // ✅ get current result matrix (b)
+  let target = matrixResultTarget || "C";
+  let b = M[target];
+  if (!A || !Xv || !b || !b.rows || !b.cols) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ compute A·x
+  let Ax = matrixMul(A, Xv);
+  if (!Ax || !Ax.rows) {
+    S.X = NaN;
+    return;
+  }
+
+  // ✅ dimension check (b - Ax must match)
+  if (b.rows !== Ax.rows || b.cols !== Ax.cols) {
+    S.X = NaN;
+    return;
+  }
+
+  // ✅ compute residual: r = b - Ax
+  let result = matrixSub(b, Ax);
+  if (!result || !result.rows) {
+    S.X = NaN;
+    return;
+  }
+
+  // ✅ overwrite SAME result matrix (no new slot)
+  M[target] = {
+    rows: result.rows,
+    cols: result.cols,
+    data: [...result.data]
+  };
+  // ✅ return reference to it
+  S.X = matrixRef(target);
+  // ✅ standard flags (same as your engine style)
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f MATRIX 7 /////////////
+function Row_Norm() {
+  let x = S.X;
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let A = M[x.name];
+  if (!A || !A.rows || !A.cols) {
+    S.X = NaN;
+    return;
+  }
+  let maxSum = 0;
+  for (let r = 0; r < A.rows; r++) {
+    let sum = 0;
+    for (let c = 0; c < A.cols; c++) {
+      let val = A.data[r * A.cols + c];
+      sum += Math.abs(val);
+    }
+    if (sum > maxSum) {
+      maxSum = sum;
+    }
+  }
+  //  Replace X with scalar
+  S.X = maxSum;
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f MATRIX 8 ///////////
+function Frobenius_of_Euclidean_norm() {
+  let x = S.X;
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let A = M[x.name];
+  if (!A || !A.rows || !A.cols) {
+    S.X = NaN;
+    return;
+  }
+  let sum = 0;
+  for (let i = 0; i < A.data.length; i++) {
+    let v = A.data[i];
+    sum += v * v;
+  }
+  //  Final scalar result
+  S.X = Math.sqrt(sum);
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f MATRIX 9 ////////////
+function Determinant() {
+  let x = S.X;
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let A = M[x.name];
+  if (!A || A.rows !== A.cols) {
+    S.X = NaN;
+    return;
+  }
+  let n = A.rows;
+  //  COPY matrix (do NOT modify original)
+  let LU = A.data.slice();
+  let sign = 1;
+  for (let k = 0; k < n; k++) {
+    let pivot = LU[k * n + k];
+    //  Handle zero pivot (simple pivoting)
+    if (pivot === 0) {
+      let swapRow = -1;
+      for (let i = k + 1; i < n; i++) {
+        if (LU[i * n + k] !== 0) {
+          swapRow = i;
+          break;
+        }
+      }
+      if (swapRow === -1) {
+        S.X = 0;
+        return;
+      }
+      // swap rows
+      for (let j = 0; j < n; j++) {
+        let idx1 = k * n + j;
+        let idx2 = swapRow * n + j;
+        let tmp = LU[idx1];
+        LU[idx1] = LU[idx2];
+        LU[idx2] = tmp;
+      }
+      sign *= -1;
+      pivot = LU[k * n + k];
+    }
+    // elimination
+    for (let i = k + 1; i < n; i++) {
+      let factor = LU[i * n + k] / pivot;
+      LU[i * n + k] = factor;
+      for (let j = k + 1; j < n; j++) {
+        LU[i * n + j] -= factor * LU[k * n + j];
+      }
+    }
+  }
+  //  determinant = product of diagonal * sign
+  let det = sign;
+  for (let i = 0; i < n; i++) {
+    det *= LU[i * n + i];
+  }
+  //  Store LU as result matrix
+  storeMatrixResult({
+    rows: n,
+    cols: n,
+    data: LU
+  });
+  //  Replace X with determinant
+  S.X = det;
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// f Py,X matrix (Zc → Zp) complex to partitioned
+// f Py,x matrix (Zc → Zp) complex to partitioned
+function Zc_to_Zp() {
+  let x = S.X;
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let name = x.name;
+  let A = M[name];
+  if (!A || !A.rows || !A.cols) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ MUST be n×2 (your complex layout)
+  if (A.cols !== 2) {
+    S.X = NaN;
+    return;
+  }
+  let n = A.rows;
+  let result = {
+    rows: 2 * n,
+    cols: 1,
+    data: new Array(2 * n)
+  };
+  for (let i = 0; i < n; i++) {
+    let re = A.data[i * 2 + 0];
+    let im = A.data[i * 2 + 1];
+    result.data[i] = re;        // top half
+    result.data[i + n] = im;    // bottom half
+  }
+  // ✅ overwrite same matrix
+  M[name] = result;
+  S.X = matrixRef(name);
+  justCalculated = true;
+  liftOnNextDigit = true;
+}
+
+// g Cy,x matrix (Zp → Zc) partitioned to complex
+function Zp_to_Zc() {
+  let x = S.X;
+  if (!isMatrix(x)) {
+    S.X = NaN;
+    return;
+  }
+  let name = x.name;
+  let A = M[name];
+  if (!A || !A.rows || !A.cols) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ CASE 1: (2 × n)  (polar → rectangular)
+  if (A.rows === 2) {
+    let n = A.cols;
+    let newData = new Array(2 * n);
+    for (let c = 0; c < n; c++) {
+      let r = A.data[c];
+      let theta = toRad(A.data[n + c]);
+      newData[c] = r * Math.cos(theta);
+      newData[n + c] = r * Math.sin(theta);
+    }
+    M[name] = {
+      rows: 2,
+      cols: n,
+      data: newData
+    };
+    justCalculated = true;
+    liftOnNextDigit = true;
+    return;
+  }
+
+  // ✅ ✅ CASE 2: (2n × 1) → THIS IS YOUR CASE
+  if (A.cols === 1 && A.rows % 2 === 0) {
+    let n = A.rows / 2;
+    let result = {
+      rows: n,
+      cols: 2,
+      data: new Array(n * 2)
+    };
+    // ✅ BUILD EXACT HP LAYOUT:
+    // [ Re₁  Im₁
+    //   Re₂  Im₂ ]
+    for (let i = 0; i < n; i++) {
+      let re = A.data[i];
+      let im = A.data[i + n];
+      result.data[i * 2 + 0] = re;  // column 1
+      result.data[i * 2 + 1] = im;  // column 2
+    }
+    // ✅ overwrite SAME matrix
+    M[name] = result;
+    // ✅ KEEP descriptor
+    S.X = matrixRef(name);
+    justCalculated = true;
+    liftOnNextDigit = true;
+    return;
+  }
+  // ❌ unsupported
+  S.X = NaN;
+}
+
+/* =========================
+   KEY MATRIX (EXPANDED)
+========================= */
+const keyMap = {
+  normal:{
+"1,1":{op:"sqrt"},
+"1,2":{op:"exp"},
+"1,3":{op:"pow10"},
+"1,4":{op:"pow"},
+"1,5":{op:"inv"},
+"1,6":{op:"chs"},
+"1,7":{op:"digit",v:7},
+"1,8":{op:"digit",v:8},
+"1,9":{op:"digit",v:9},
+"1,0":{op:"div"},
+"2,1":{op:"sst"},
+"2,2":{op:"gto"},//need case////////////////////////////////////////////////////////////////////////////////////////////////////////
+"2,3":{op:"sin"},
+"2,4":{op:"cos"},
+"2,5":{op:"tan"},
+"2,6":{op:"eex"},
+"2,7":{op:"digit",v:4},
+"2,8":{op:"digit",v:5},
+"2,9":{op:"digit",v:6},
+"2,0":{op:"mul"},
+"3,1":{op:"rs"}, // run/stop
+"3,2":{op:"gsb"},
+"3,3":{op:"rolldown"},
+"3,4":{op:"swap"},
+"3,5":{op:"backspace"},
+"3,7":{op:"digit",v:1},
+"3,8":{op:"digit",v:2},
+"3,9":{op:"digit",v:3},
+"3,0":{op:"sub"},
+"4,1":{op:"on"},
+"4,2":{op:"shiftF"},
+"4,3":{op:"shiftG"},
+"4,4":{op:"sto"},
+"4,5":{op:"rcl"},
+"4,6":{op:"enter"},
+"4,7":{op:"digit",v:0},
+"4,8":{op:"dot"},
+"4,9":{op:"sigmaplus"},
+"4,0":{op:"add"},
+},
+
+  f:{
+"1,1": { op: "lblA"},
+"1,2": { op: "lblB"},
+"1,3": { op: "lblC"},
+"1,4": { op: "lblD"},
+"1,5": { op: "lblE" },
+"1,6":{op:"matrix_mode"},
+"1,7":{op:"fix"},
+"1,8":{op:"sci"},
+"1,9":{op:"eng"},
+"1,0":{op:"solve"},
+"2,1":{op:"lbl"},
+"2,2":{op:"hyp"},
+"2,3":{op:"dim"},
+"2,4":{op:"viewIM"},
+"2,5":{op:"toI"},
+"2,6":{op:"result"},
+"2,7":{op:"xchg_reg"},
+"2,8":{op:"DSE"},
+"2,9":{op:"ISG"},
+"2,0":{op:"integrate"}, // ∫
+"3,1":{op:"PSE"},
+"3,2":{op:"sigma"},
+"3,3":{op:"prgm"},
+"3,4":{op:"reg"},
+"3,5":{op:"prefix"},
+"3,7":{op:"toRec"},
+"3,8":{op:"toHMS"},
+"3,9":{op:"toRad"},
+"3,0":{op:"reim"},
+"4,4":{op:"frac"},
+"4,5":{op:"user"},
+"4,6":{op:"random"},
+"4,7":{op:"fact"},
+"4,8":{op:"ybarR"},
+"4,9":{op:"linReg"},
+"4,0":{op:"perm"},
+},
+
+  g:{
+"1,1":{op:"square"},
+"1,2":{op:"ln"},
+"1,3":{op:"log"},
+"1,4":{op:"percent"},
+"1,5":{op:"deltapct"},
+"1,6":{op:"abs"},
+"1,7":{op:"deg"},
+"1,8":{op:"rad"},
+"1,9":{op:"grd"},
+"1,0":{op:"XlteY"},
+"2,1":{op:"bst"},
+"2,2":{op:"iHyp"},
+"2,3":{op:"asin"},
+"2,4":{op:"acos"},
+"2,5":{op:"atan"},
+"2,6":{op:"pi"},
+"2,7":{op:"SF"},
+"2,8":{op:"CF"},
+"2,9":{op:"FS"},
+"2,0":{op:"Xe0"},
+"3,1":{op:"PR"},
+"3,2":{op:"rtn"},
+"3,3":{op:"rollup"},
+"3,4":{op:"rnd"},
+"3,5":{op:"clx"},
+"3,7":{op:"toPol"},
+"3,8":{op:"toH"},
+"3,9":{op:"toDeg"},
+"3,0":{op:"test"},
+"4,4":{op:"int"},
+"4,5":{op:"rcl_reg"},
+"4,6":{op:"lstx"},
+"4,7":{op:"xbar"},
+"4,8":{op:"sdev"},
+"4,9":{op:"sigmaminus"},
+"4,0":{op:"comb"},
+  }
+};
+
+/* =========================
+   KEY PRESS
+========================= */
+function pressKey(r, c) {
+  //  Only allow ON when powered off
+  if (!powerOn && !(r === 4 && c === 1)) {
+    return;
+  }
+  let key = `${r},${c}`;
+  let normalInstr = keyMap.normal[key];
+  const isShiftKey =
+    normalInstr?.op === "shiftF" ||
+    normalInstr?.op === "shiftG";
+  const isAEKey = ["1,1","1,2","1,3","1,4","1,5"].includes(key);
+  let instr;
+  if (displayError) {
+    displayError = "";
+    updateDisplay();
+    return;
+}
+
+  /* =========================
+      PRIORITY KEY ROUTING
+  ========================= */
+if (programMode) {
+  let rawInstr = keyMap.normal[`${r},${c}`];
+  if (rawInstr?.op === "shiftF") {
+    startInstruction();
+    pushByteRight("42");
+    state = "EXPECT_ONE_KEY";
+  }
+  if (rawInstr?.op === "shiftG") {
+    startInstruction();
+    pushByteRight("43");
+    state = "EXPECT_ONE_KEY";
+  }
+}
+// 1. SHIFT KEYS ALWAYS WIN
+if (isShiftKey) {
+  instr = normalInstr;
+console.log(
+    "ROUTE",
+    "pendingCommand=", pendingCommand,
+    "instr=", instr?.op,
+    "key=", key
+);
+  exec(instr);   // ✅ execute immediately
+  updateDisplay();
+  return;        // ✅ STOP HERE (CRITICAL)
+}
+
+//  2. COMMAND MODES MUST OVERRIDE SHIFT ✅
+// ✅ RCL + DIM (SIN key) override
+else if (pendingCommand === "RCL" && key === "2,3") {
+  instr = { op: "dim" };
+}
+// DIM MODE
+else if (pendingCommand === "DIM") {
+  if (!isAEKey) return;
+  instr = { op: `key_${["A","B","C","D","E"][["1,1","1,2","1,3","1,4","1,5"].indexOf(key)]}` };
+}
+// RESULT TARGET
+else if (pendingResultTarget && isAEKey) {
+  instr = { op: `key_${["A","B","C","D","E"][["1,1","1,2","1,3","1,4","1,5"].indexOf(key)]}` };
+}
+// MATRIX COMMAND MODE
+else if (pendingCommand === "MATRIX_CMD") {
+  instr = normalInstr;
+}
+else if (shiftF || shiftG) {
+  const isAEKey = ["1,1","1,2","1,3","1,4","1,5"].includes(key);
+  // ✅ CRITICAL FIX: intercept STO/RCL + g + A–E
+  if (shiftG &&
+      pendingCommand &&
+      (pendingCommand === "STO" || pendingCommand === "RCL") &&
+      isAEKey) {
+    instr = {
+      op: `key_${["A","B","C","D","E"][["1,1","1,2","1,3","1,4","1,5"].indexOf(key)]}`
+    };
+  }
+  else {
+    let shifted = shiftF ? keyMap.f[key] : keyMap.g[key];
+    instr = shifted || normalInstr;
+  }
+}
+
+//  3. DIM MODE
+else if (pendingCommand === "DIM") {
+  if (!isAEKey) return;
+  instr = keyMap.f[key];
+}
+//  4. RESULT TARGET
+else if (pendingResultTarget && isAEKey) {
+  instr = keyMap.f[key];
+}
+//  5. MATRIX COMMAND MODE
+else if (pendingCommand === "MATRIX_CMD") {
+  if (!isAEKey && !normalInstr) return;
+  instr = isAEKey ? keyMap.f[key] : normalInstr;
+}
+else if (USER && isAEKey) {
+  const map = {
+    "1,1": { op: "key_A" },
+    "1,2": { op: "key_B" },
+    "1,3": { op: "key_C" },
+    "1,4": { op: "key_D" },
+    "1,5": { op: "key_E" }
+  };
+  instr = map[key];
+}
+// 7. STO / RCL override
+else if (    
+  pendingCommand &&    
+  (    
+    pendingCommand.startsWith("STO") ||    
+    pendingCommand.startsWith("RCL") ||    
+    pendingCommand === "GTO" ||    
+    pendingCommand === "LBL" ||    
+    pendingCommand === "GSB" ||  
+    pendingCommand === "INTEGRATE" ||  
+    pendingCommand === "INTEGRATE_DOT" ||
+    pendingCommand === "SOLVE" ||
+    pendingCommand === "SOLVE_DOT"
+  )    
+)
+{
+  // ✅ MATRIX key (STO MATRIX / RCL MATRIX)
+  if (key === "1,6") {
+    instr = { op: "matrix_mode" };
+  }
+  // ✅ A–E matrix keys
+else if (  
+    (pendingCommand === "LBL" ||
+     pendingCommand === "GTO" ||
+     pendingCommand === "GSB" ||
+     pendingCommand === "INTEGRATE" ||
+     pendingCommand === "SOLVE") &&
+    isAEKey
+) {
+    const names = {
+        "1,1": "A",
+        "1,2": "B",
+        "1,3": "C",
+        "1,4": "D",
+        "1,5": "E"
+    };
+
+    instr = { op: `key_${names[key]}` };
+}
+  // ✅ ✅ RESULT KEY (THIS FIX)
+  else if (key === "2,6") {
+    instr = { op: "result" };
+  }
+// ✅ allow I register
+else if (key === "2,5") {
+  instr = { op: "toI" };
+}
+else if (key === "2,4") {
+  instr = { op: "viewIM"};
+}
+  // ✅ fallback to normal behavior
+  else {
+    instr = normalInstr;
+  }
+}
+
+//  8. DEFAULT
+else {
+  instr = normalInstr;
+}
+
+if (!instr || !instr.op) {
+  console.warn("Invalid instruction:", key);
+  return;
+}
+// HP-15C GTO CHS nnn line navigation
+if (
+    pendingCommand === "GTO" &&
+    instr.op === "chs"
+) {
+    pendingGotoLine = true;
+    gotoBuffer = "";
+    pendingCommand = null;
+    shiftF = false;
+    shiftG = false;
+    return;
+}
+
+
+
+
+  /* ==============================================================================================
+      PROGRAM MODE
+  ============================================================================================== */
+function startInstruction() {
+  buildBuffer = [];
+}
+
+function pushByteRight(byte) {
+  buildBuffer.push(byte);
+  console.log("BUILD BUFFER:", buildBuffer);
+  updateDisplay();
+}
+
+function finalizeInstruction() {
+  if (buildBuffer.length === 0) return;
+labelMode = false;
+  // PRGM block
+  if (buildBuffer.length === 1) {
+    let first = buildBuffer[0];
+    let key = `${first[0]},${first[1]}`;
+    let instr =
+      keyMap.normal[key] ||
+      keyMap.f[key] ||
+      keyMap.g[key];
+    if (instr && instr.op === "prgm") {
+      buildBuffer = [];
+      state = "IDLE";
+      return;
+    }
+  }
+  let bytes = [...buildBuffer];
+  // ✅ memory guard (correct)
+  if (progSize >= MAX_STEPS - 1) {
+    buildBuffer = [];
+    return;
+  }
+let insertIndex = pc + 1;
+prog.splice(insertIndex, 0, { bytes });
+progSize++;
+pc = insertIndex;
+  buildBuffer = [];
+  updateDisplay();
+}
+
+  /* =========================
+      PROGRAM MODE RECORDING
+  ========================= */
+if (
+  programMode &&
+  !pendingGotoLine &&
+  instr.op !== "rs" &&
+  instr.op !== "PR" &&
+  instr.op !== "prgm" &&
+  instr.op !== "bst" &&
+  instr.op !== "sst" &&
+  instr.op !== "backspace"
+)
+{
+// ✅ DO NOT RECORD f PRGM sequence
+if (shiftF && instr.op === "prgm") {
+  state = "IDLE";
+  buildBuffer = [];
+  return;
+}
+  let byte = encodeKey(r, c);
+  let op = instr.op;
+console.log(
+    "RECORD:",
+    "state=", state,
+    "op=", op,
+    "pendingCommand=", pendingCommand
+);
+console.log(
+  "STATE=", state,
+  "BUFFER=", buildBuffer,
+  "OP=", op
+);
+  switch(state) {
+case "IDLE":
+if (op === "shiftF" || op === "shiftG") {
+  // ✅ DO NOT start new instruction if one already in progress
+  if (buildBuffer.length === 0) {
+    startInstruction();
+  }
+  // ✅ push prefix byte
+  if (op === "shiftF") {
+    pushByteRight("42");
+  } else {
+    pushByteRight("43");
+  }
+  state = "EXPECT_ONE_KEY";
+  return;
+}
+if (prefixOps.includes(op)) {
+  // ✅ CRITICAL: do NOT reset buffer if shift already started it
+  if (buildBuffer.length === 0) {
+    startInstruction();
+  }
+  pushByteRight(byte);
+if (op === "lbl") {
+  labelMode = true;        // ✅ NEW
+  state = "EXPECT_LBL_ARG";
+} else {
+    state = "EXPECT_PREFIX_ARG";
+  }
+  return;
+}
+  if (op === "sto" || op === "rcl") {
+    startInstruction();
+    pushByteRight(byte);
+    state = "STO_RCL";
+    return;
+  }
+  startInstruction();
+  pushByteRight(byte);
+  finalizeInstruction();
+  return;
+case "EXPECT_LBL_ARG":
+  // A-E
+  if (op.startsWith("key_")) {
+    pushByteRight(byte);
+    finalizeInstruction();
+    state = "IDLE";
+    return;
+  }
+  // 0-9
+  if (op === "digit") {
+    pushByteRight(byte);
+    finalizeInstruction();
+    state = "IDLE";
+    return;
+  }
+  // .0-.9
+  if (op === "dot") {
+    pushByteRight(byte);
+    state = "EXPECT_REGISTER";
+    return;
+  }
+  // INVALID LBL ARGUMENT
+  buildBuffer = [];
+  state = "IDLE";
+  labelMode = false;
+  startInstruction();
+  pushByteRight(byte);
+  finalizeInstruction();
+  return;
+
+case "EXPECT_ONE_KEY":
+  pushByteRight(byte);
+  shiftF = false;
+  shiftG = false;
+  if (prefixOps.includes(op)) {
+    state = "EXPECT_PREFIX_ARG";   // needs argument (like LBL, DIM)
+  } else {
+    finalizeInstruction();
+    state = "IDLE";
+  }
+  return;
+
+case "EXPECT_PREFIX_ARG":
+  // HP-15C GTO CHS nnn editor navigation
+  if (
+      buildBuffer.length === 1 &&
+      buildBuffer[0] === "22" &&
+      op === "chs"
+  ) {
+      pendingGotoLine = true;
+      gotoBuffer = "";
+
+      buildBuffer = [];
+      state = "IDLE";
+      return;
+  }
+// f LBL only accepts A-E, 0-9, .0-.9
+
+// LBL .n, GTO .n, GSB .n
+if (
+    (
+        buildBuffer.length === 2 &&
+        buildBuffer[0] === "42" &&
+        buildBuffer[1] === "21"
+    ) ||
+    (
+        buildBuffer.length === 1 &&
+        buildBuffer[0] === "22"
+    ) ||
+    (
+        buildBuffer.length === 1 &&
+        buildBuffer[0] === "32"
+    )
+) {
+    if (op === "dot") {
+        pushByteRight(byte);
+        state = "EXPECT_REGISTER";
+        return;
+    }
+
+    const validLabel =
+        (r === 1 && c >= 1 && c <= 5) ||
+        op === "digit";
+
+    if (!validLabel) {
+        buildBuffer = [];
+        state = "IDLE";
+        labelMode = false;
+
+        startInstruction();
+        pushByteRight(byte);
+        finalizeInstruction();
+        return;
+    }
+}
+
+  pushByteRight(byte);
+  finalizeInstruction();
+  state = "IDLE";
+  return;
+
+    case "STO_RCL":
+      if (["add","sub","mul","div"].includes(op)) {
+        pushByteRight(byte);
+        state = "EXPECT_REGISTER";
+        return;
+      }
+      if (op === "digit" || op === "dot") {
+        pushByteRight(byte);
+        finalizeInstruction();
+        state = "IDLE";
+        return;
+      }
+      finalizeInstruction();
+      state = "IDLE";
+      return;
+
+case "EXPECT_REGISTER":
+  if (op === "dot") {
+    pushByteRight(byte);
+    return;
+  }
+  if (op === "digit") {
+
+
+
+const digitMap = {
+    "47":"0",
+    "37":"1",
+    "38":"2",
+    "39":"3",
+    "27":"4",
+    "28":"5",
+    "29":"6",
+    "17":"7",
+    "18":"8",
+    "19":"9"
+};
+
+if (buildBuffer[buildBuffer.length - 1] === "48") {
+    buildBuffer.pop();
+    pushByteRight("." + digitMap[byte]);
+    console.log("DOT LABEL STORED:", buildBuffer);
+}
+else {
+    pushByteRight(byte);
+}
+
+    finalizeInstruction();
+    state = "IDLE";
+    return;
+  }
+  buildBuffer = [];
+  state = "IDLE";
+  labelMode = false;
+  startInstruction();
+  pushByteRight(byte);
+  finalizeInstruction();
+  return;
+}
+}
+
+/* =========================
+    EXECUTE
+========================= */
+// ✅ In PROGRAM MODE: do NOT execute SHIFT keys
+if (!(programMode && (instr.op === "shiftF" || instr.op === "shiftG"))) {
+  exec(instr);
+}
+console.log("EXEC:", instr.op);
+// ✅ GLOBAL one-shot shift reset (HP behavior)
+if (instr.op !== "shiftF" && instr.op !== "shiftG") {
+  shiftF = false;
+  shiftG = false;
+}
+updateDisplay();
+}
+
+/* ======================================================================================
+   COMPLEX ENGINE
+====================================================================================== */
+function complex(re, im=0){
+  return { re, im };
+}
+
+function isComplex(x){
+  return x && typeof x === "object" && "re" in x && "im" in x;
+}
+
+// Convert real → complex
+function toComplex(x){
+  return isComplex(x) ? x : complex(x,0);
+}
+
+/* ==== BASIC OPS ==== */
+function cAdd(a,b){
+  a=toComplex(a); b=toComplex(b);
+  return complex(a.re+b.re, a.im+b.im);
+}
+
+function cSub(a, b){
+  a = toComplex(a);
+  b = toComplex(b);
+  return complex(
+    a.re - b.re,
+    a.im - b.im
+  );
+}
+
+function cMul(a,b){
+  a=toComplex(a); b=toComplex(b);
+  return complex(
+    a.re*b.re - a.im*b.im,
+    a.re*b.im + a.im*b.re
+  );
+}
+
+function cDiv(a,b){
+  a=toComplex(a); b=toComplex(b);
+  let d = b.re*b.re + b.im*b.im;
+  return complex(
+    (a.re*b.re + a.im*b.im)/d,
+    (a.im*b.re - a.re*b.im)/d
+  );
+}
+
+function cExp(z){
+  let ea = Math.exp(z.re);
+  return complex(
+    ea * Math.cos(z.im),
+    ea * Math.sin(z.im));
+  
+}
+
+function cLn(z){
+  let mag = Math.hypot(z.re, z.im);
+  let ang = Math.atan2(z.im, z.re);
+  return complex(Math.log(mag), ang);
+}
+
+function cSin(z){
+  return complex(
+    Math.sin(z.re)*Math.cosh(z.im),
+    Math.cos(z.re)*Math.sinh(z.im)
+  );
+}
+
+function cCos(z){
+  return complex(
+    Math.cos(z.re)*Math.cosh(z.im),
+   -Math.sin(z.re)*Math.sinh(z.im)
+  );
+}
+
+function cTan(z){
+  return cDiv(cSin(z), cCos(z));
+}
+
+function cSinh(z){
+  return complex(
+    Math.sinh(z.re)*Math.cos(z.im),
+    Math.cosh(z.re)*Math.sin(z.im)
+  );
+}
+
+function cCosh(z){
+  return complex(
+    Math.cosh(z.re)*Math.cos(z.im),
+    Math.sinh(z.re)*Math.sin(z.im)
+  );
+}
+
+function cTanh(z){
+  return cDiv(cSinh(z), cCosh(z));
+}
+
+function cSqrt(z){
+  let r = Math.hypot(z.re, z.im);
+  let theta = Math.atan2(z.im, z.re);
+  let sqrtR = Math.sqrt(r);
+  let halfTheta = theta / 2;
+  return complex(
+    sqrtR * Math.cos(halfTheta),
+    sqrtR * Math.sin(halfTheta)
+  );
+}
+
+function cDivScalar(z, s){
+  return complex(z.re / s, z.im / s);
+}
+
+function cMulScalar(z, s){
+  return complex(z.re * s, z.im * s);
+}
+
+function iMul(z){ // i * z
+  return complex(-z.im, z.re);
+}
+
+function negIMul(z){ // -i * z
+  return complex(z.im, -z.re);
+}
+
+/* =========================
+   EXECUTION ENGINE
+========================= */
+function exec(i){
+  if (pendingCommand === "SOLVE") {
+  if (i.op === "key_A") { executeSolve("A"); return; }
+  if (i.op === "key_B") { executeSolve("B"); return; }
+  if (i.op === "key_C") { executeSolve("C"); return; }
+  if (i.op === "key_D") { executeSolve("D"); return; }
+  if (i.op === "key_E") { executeSolve("E"); return; }
+
+  if (i.op === "digit") {
+    executeSolve(String(i.v));
+    return;
+  }
+
+  if (i.op === "dot") {
+    pendingCommand = "SOLVE_DOT";
+    prefixDisplay = "SOLVE .";
+    return;
+  }
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  displayError = "Error 4";
+  updateDisplay();
+  return;
+}
+
+if (pendingCommand === "SOLVE_DOT") {
+  if (i.op === "digit") {
+    executeSolve("." + i.v);
+    return;
+  }
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  displayError = "Error 4";
+  updateDisplay();
+  return;
+}
+if (pendingCommand === "INTEGRATE") {
+  if (i.op === "key_A") { executeIntegrate("A"); return; }
+  if (i.op === "key_B") { executeIntegrate("B"); return; }
+  if (i.op === "key_C") { executeIntegrate("C"); return; }
+  if (i.op === "key_D") { executeIntegrate("D"); return; }
+  if (i.op === "key_E") { executeIntegrate("E"); return; }
+
+  if (i.op === "digit") {
+    executeIntegrate(String(i.v));
+    return;
+  }
+
+  if (i.op === "dot") {
+    pendingCommand = "INTEGRATE_DOT";
+    prefixDisplay = "∫ .";
+    return;
+  }
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  displayError = "Error 4";
+  updateDisplay();
+  return;
+}
+
+if (pendingCommand === "INTEGRATE_DOT") {
+  if (i.op === "digit") {
+    executeIntegrate("." + i.v);
+    return;
+  }
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  displayError = "Error 4";
+  updateDisplay();
+  return;
+}
+
+
+if (pendingCommand === "GSB") {
+
+    if (i.op === "key_A") { executeGSB("A"); return; }
+    if (i.op === "key_B") { executeGSB("B"); return; }
+    if (i.op === "key_C") { executeGSB("C"); return; }
+    if (i.op === "key_D") { executeGSB("D"); return; }
+    if (i.op === "key_E") { executeGSB("E"); return; }
+
+    if (i.op === "digit") {
+        executeGSB(String(i.v));
+        return;
+    }
+
+    if (i.op === "dot") {
+        pendingCommand = "GSB_DOT";
+        prefixDisplay = "GSB .";
+        return;
+    }
+}
+
+
+if (pendingCommand === "GSB_DOT") {
+    if (i.op === "digit") {
+        executeGSB("." + i.v);
+        pendingCommand = null;
+        prefixDisplay = "";
+        return;
+    }
+
+    pendingCommand = null;
+    prefixDisplay = "";
+    displayError = "Error 4";
+    return;
+}
+
+if (pendingGotoLine && i.op !== "digit") {
+    return;
+}
+
+if (pendingGotoLineEdit) {
+    if (i.op !== "digit") {
+        return;
+    }
+}
+
+  if (pendingCommand !== "MATRIX_CMD" && prefixDisplay === "MATRIX") {
+  prefixDisplay = "";
+}
+console.log("EXEC OP:", i.op);
+//  Correct prefix cancel handling
+if (
+  pendingCommand &&
+  !(
+    pendingCommand === "SET_FIX" ||
+    pendingCommand === "SF" ||
+    pendingCommand === "CF" ||
+    pendingCommand === "GTO" ||
+    pendingCommand === "MATRIX_CMD" ||
+    pendingCommand.startsWith("STO") ||
+    pendingCommand.startsWith("RCL") ||
+    pendingCommand === "XCHG"
+  )
+)
+ {
+
+const isAEKey =
+  i.op === "key_A" ||
+  i.op === "key_B" ||
+  i.op === "key_C" ||
+  i.op === "key_D" ||
+  i.op === "key_E";
+
+const isAllowedFollowup =
+  i.op === "digit" ||
+  i.op === "dot" ||
+  ["add","sub","mul","div"].includes(i.op) ||
+  i.op === "random" ||
+  isAEKey;
+
+  if (!isAllowedFollowup) {
+    pendingCommand = null;
+    registerDecimal = false;
+    prefixDisplay = "";
+
+    continueEntry = true;
+
+    i = { op: "noop" };
+  }
+}
+
+if (pendingCommand === "MATRIX_CMD") {
+  const validFollowup =
+    i.op === "digit";   //  ONLY digits allowed now
+  if (!validFollowup) {
+    pendingCommand = null;
+    prefixDisplay = "";
+  }
+}
+
+switch(i.op){
+case "key_A":
+case "key_B":
+case "key_C":
+case "key_D":
+case "key_E": {
+console.log("KEY OP:", i.op);
+let name = null;
+if (i.op === "key_A") name = "A";
+if (i.op === "key_B") name = "B";
+if (i.op === "key_C") name = "C";
+if (i.op === "key_D") name = "D";
+if (i.op === "key_E") name = "E";
+if (pendingCommand === "RCL_DIM") {
+  let m = M[name];
+  if (!m || !m.rows || !m.cols) {
+    S.X = NaN;
+  } else {
+    push(S.X);
+    S.X = m.rows;
+    push(S.X);
+    S.X = m.cols;
+  }
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  return;
+}
+
+if (pendingCommand === "RCL") {
+  let m = M[name];
+  if (!m || !m.rows || !m.cols) {
+    S.X = NaN;
+  } else {
+    let idx = getMatrixIndexFromR(m);
+    if (idx < 0) {
+      S.X = NaN;
+    } else {
+      push(S.X);                 // HP stack behavior
+      S.X = m.data[idx];         // recall element
+      stepMatrixPointer(m);      // advance pointer
+    }
+  }
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  shiftF = false;
+  shiftG = false;
+  return;
+}
+
+if (pendingCommand === "STO" && shiftG) {
+  let m = M[name];
+  if (!m || !m.rows || !m.cols) {
+    S.X = NaN;
+    pendingCommand = null;
+    prefixDisplay = "";
+    return;
+  }
+  let value = S.Z;
+  let row = Math.floor(S.Y) - 1;
+  let col = Math.floor(S.X) - 1;
+  if (row < 0 || col < 0 || row >= m.rows || col >= m.cols) {
+    S.X = NaN;
+  } else {
+    let idx = row * m.cols + col;
+    m.data[idx] = value;
+    drop();
+    drop();
+    S.X = value;
+  }
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  shiftG = false;
+  shiftF = false;
+  return;
+}
+
+if (pendingCommand === "STO_MATRIX") {
+  if (!isMatrix(S.X)) {
+    let val = S.X;
+    let m = M[name];
+    if (!m || !m.rows || !m.cols) {
+      S.X = NaN;
+      pendingCommand = null;
+      prefixDisplay = "";
+      return;
+    }
+    m.data = m.data.map(() => val);
+  }
+  else {
+    let source = M[S.X.name];
+    if (!source || !source.rows || !source.cols) {
+      S.X = NaN;
+      pendingCommand = null;
+      prefixDisplay = "";
+      return;
+    }
+    M[name] = {
+      rows: source.rows,
+      cols: source.cols,
+      data: [...source.data]
+    };
+  }
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  shiftF = false;
+  shiftG = false;
+  return;
+}
+
+if (pendingCommand === "RCL_MATRIX_SELECT") {
+  push(S.X);
+  S.X = matrixRef(name);
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  shiftF = false;
+  shiftG = false;
+  return;
+}
+
+if (pendingCommand === "RCL" && shiftG) {
+  let m = M[name];
+  if (!m || !m.rows || !m.cols) {
+    S.X = NaN;
+    pendingCommand = null;
+    prefixDisplay = "";
+    return;
+  }
+  let row = Math.floor(S.Y) - 1;
+  let col = Math.floor(S.X) - 1;
+  if (row < 0 || col < 0 || row >= m.rows || col >= m.cols) {
+    S.X = NaN;
+  } else {
+    let idx = row * m.cols + col;
+    drop();
+    S.X = m.data[idx];
+  }
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  shiftF = false;
+  shiftG = false;
+  return;
+}
+
+if (!name) {
+  console.log("Bad key op:", i.op);
+  break;
+}
+
+
+
+// RCL MATRIX → handled on mouseup, NOT here
+if (pendingMatrixRecall) {
+  break;
+}
+
+
+
+//  MATRIX STO ENTRY
+if (pendingCommand === "STO" && matrixEntryMode) {
+  let m = M[name];
+  if (!m) break;
+
+  let idx = getMatrixIndexFromR(m);
+
+  if (idx < 0) {
+    entering = true;
+    inputBuffer = "Error 3";
+    pendingCommand = null;
+    prefixDisplay = "";
+    return;
+  }
+
+  m.data[idx] = S.X;
+
+  //  Move pointer like HP
+  stepMatrixPointer(m);
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+
+  break;
+}
+  lastMatrixKey = name;
+  //  RESULT TARGET
+  if (pendingResultTarget) {
+    matrixResultTarget = name;
+    pendingResultTarget = false;
+    prefixDisplay = "";
+    
+  shiftF = false;
+  shiftG = false;
+
+    console.log("RESULT matrix set to:", name);
+    break;
+  }
+  //  DIM
+
+let rows = Math.floor(S.Y);
+let cols = Math.floor(S.X);
+
+// ✅ SPECIAL CASE: X == 0 → force 0×0 (HP behavior)
+if (cols === 0) {
+  M[name] = {
+    rows: 0,
+    cols: 0,
+    data: []
+  };
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  break;
+}
+
+// ✅ normal validation (only negatives are illegal)
+if (rows < 0 || cols < 0) {
+  S.X = NaN;
+  pendingCommand = null;
+  prefixDisplay = "";
+  break;
+}
+
+// ✅ normal dimensioning
+
+let old = M[name];
+
+if (!old || !old.rows || !old.cols) {
+
+  // ✅ New matrix (no previous data)
+  M[name] = {
+    rows,
+    cols,
+    data: Array(rows * cols).fill(0)
+  };
+
+} else {
+
+  // ✅ HP RESIZE LOGIC (preserve + reshape)
+  let oldData = old.data;
+  let newSize = rows * cols;
+  let newData = [];
+
+  for (let i = 0; i < newSize; i++) {
+    newData[i] = (i < oldData.length) ? oldData[i] : 0;
+  }
+
+  M[name] = {
+    rows,
+    cols,
+    data: newData
+  };
+}
+
+
+pendingCommand = null;
+prefixDisplay = "";
+entering = false;
+inputBuffer = "";
+liftOnNextDigit = true;
+break;
+
+
+  //  LABEL
+
+if (pendingCommand === "LBL") {
+  labels[name] = pc;
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+
+  return;
+}
+
+
+  //  GTO
+
+
+if (pendingCommand === "GTO") {
+
+    rebuildLabels();
+
+    if (!(name in labels)) {
+        displayError = "Error 4";
+        pendingCommand = null;
+        return;
+    }
+
+    if (execRunning) {
+        execPC = labels[name] + 1;
+        programJumped = true;
+    } else {
+        pc = labels[name];
+    }
+
+    pendingCommand = null;
+    return;
+}
+
+
+
+// GSB
+if (pendingCommand === "GSB") {
+
+    console.log(
+        "GSB EXEC",
+        "label=", name,
+        "pc=", pc,
+        "labels=", labels,
+        "target=", labels[name]
+    );
+
+
+    executeGSB(name);
+    return;
+}
+
+
+
+
+shiftF = false;
+shiftG = false;
+
+  
+  break;
+}
+
+ 
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+
+case "noop":
+  // Do absolutely nothing
+  break;
+
+
+// Sets and clears matrix mode
+case "digit":
+  
+
+
+if (pendingGotoLine) {
+
+    gotoBuffer += String(i.v);
+
+    if (gotoBuffer.length < 3) {
+        return;
+    }
+
+    const targetLine = parseInt(gotoBuffer, 10);
+
+    pendingGotoLine = false;
+    gotoBuffer = "";
+
+    if (targetLine > progSize) {
+      displayError = "Error 4";
+      updateDisplay();
+      return;
+    }
+
+    pc = targetLine;
+
+    updateDisplay();
+    return;
+}
+
+
+if (pendingGotoLineEdit) {
+
+    gotoLineBuffer += String(i.v);
+
+    // no display update until all 3 digits entered
+    if (gotoLineBuffer.length < 3) {
+        return;
+    }
+
+    let line = parseInt(gotoLineBuffer, 10);
+
+    // reposition editor/program pointer
+    pc = Math.min(line, progSize);
+
+    pendingGotoLineEdit = false;
+    gotoLineBuffer = "";
+
+    updateDisplay();
+    return;
+}
+
+
+  if (pendingCommand === "TEST") {
+    if (programMode) {
+      // RECORD instruction
+      
+console.log("INVALID LBL ARG:", op, "RECORDING AS NORMAL KEY");
+
+      startInstruction();
+      pushByteRight("43");   // g
+      pushByteRight("30");   // TEST opcode
+      pushByteRight(String(i.v));  // test number
+      finalizeInstruction();
+    } else {
+      // EXECUTE
+      runTest(i.v);
+    }
+    pendingCommand = null;
+    prefixDisplay = "";
+    return;
+  }
+
+if (pendingCommand === "MATRIX_CMD") {
+  if (i.v === 0) {
+    clearAllMatrices();
+  }
+  else if (i.v === 1) {
+    matrixEntryMode = true;
+    matrixEntryTarget = null;
+    R[0] = R[1] = 1;
+    console.log("Matrix entry mode ENABLED");
+  }
+
+
+  
+else if (i.v === 2) {
+  ZpairedToZaugmented();
+}
+else if (i.v === 3) {
+  ZaugemntedToZpaired();
+}
+else if (i.v === 4) {
+  transpose();
+}
+else if (i.v === 5) {
+  yTransposeX();
+}
+else if (i.v === 6){
+  residual();
+}
+else if (i.v === 7) {
+  Row_Norm();
+}
+else if (i.v === 8) {
+  Frobenius_of_Euclidean_norm();
+}
+else if (i.v === 9) {
+  Determinant();
+}
+
+
+  //  HARD RESET PREFIX STATE
+  pendingCommand = null;
+  prefixDisplay = "";
+  shiftF = false;
+  shiftG = false;
+  updateDisplay();
+  return;
+}
+
+  if (
+    pendingCommand === "SF" ||
+    pendingCommand === "CF"
+  ) {
+    digit(i.v);
+    return;
+  }
+if (
+    pendingCommand === "SET_FIX" ||
+    pendingCommand === "SET_SCI" ||
+    pendingCommand === "SET_ENG"
+) {
+
+    fixDigits = i.v;
+
+    if (pendingCommand === "SET_FIX") displayMode = "FIX";
+    if (pendingCommand === "SET_SCI") displayMode = "SCI";
+    if (pendingCommand === "SET_ENG") displayMode = "ENG";
+
+    pendingCommand = null;
+    prefixDisplay = "";
+
+    updateDisplay();
+    return;
+}
+
+
+  digit(i.v);
+  return;
+
+// 1,1 //////////////////////////////
+    case "sqrt":
+      if (entering) {
+S.X = parseFloat(inputBuffer || "0");
+}
+saveLastX();
+if (F[8]) {
+  let z = complex(S.X, IM.X);
+  let r = Math.sqrt(Math.sqrt(z.re*z.re + z.im*z.im));
+  let theta = Math.atan2(z.im, z.re) / 2;
+  let result = complex(clean(r * Math.cos(theta)), clean(r * Math.sin(theta)));
+  S.X = result.re;
+  IM.X = result.im;
+} else {
+  S.X = Math.sqrt(S.X);
+}
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true; break;
+
+
+// g 1,1 //////////////////////////////
+case "square":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8]) {
+    let a = S.X;
+    let b = IM.X;
+    let real = a*a - b*b;
+    let imag = 2*a*b;
+    S.X = clean(real);
+    IM.X = clean(imag);
+  } else {
+    S.X = S.X * S.X;
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// f 1,1 //////////////////////////////
+
+case "lblA":
+  shiftF = false;
+    entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  executeProgramLabel("A");
+  return;
+
+
+
+// 1,2 //////////////////////////////
+case "exp":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8]) {
+    let a = S.X;
+    let b = IM.X;
+    let ea = Math.exp(a);
+    let real = ea * Math.cos(b);
+    let imag = ea * Math.sin(b);
+    S.X = clean(real);
+    IM.X = clean(imag);
+  } else {
+    S.X = Math.exp(S.X);
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// g 1,2 //////////////////////////////
+case "ln":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8]) {
+    let a = S.X;
+    let b = IM.X;
+    let mag = Math.sqrt(a*a + b*b);      // |z|
+    let angle = Math.atan2(b, a);        // arg(z)
+    let real = Math.log(mag);
+    let imag = angle;
+    S.X = clean(real);
+    IM.X = clean(imag);
+  } else {
+    S.X = Math.log(S.X);
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// f 1,2 //////////////////////////////
+
+case "lblB":
+  shiftF = false;
+    entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  executeProgramLabel("B");
+  return;
+
+
+// 1,3 //////////////////////////////
+case "pow10":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8]) {
+    //  complex: 10^z = e^(z * ln(10))
+    let z = complex(S.X, IM.X);
+    let ln10 = Math.log(10);
+    let scaled = complex(z.re * ln10, z.im * ln10);
+    let result = cExp(scaled);
+    S.X = clean(result.re);
+    IM.X = clean(result.im);
+  } else {
+    S.X = Math.pow(10, S.X);
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// g 1,3 //////////////////////////////
+case "log":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8]) {
+    //  complex: log10(z) = ln(z) / ln(10)
+    let z = complex(S.X, IM.X);
+    let lnz = cLn(z);
+    let ln10 = Math.log(10);
+    let result = complex(
+      lnz.re / ln10,
+      lnz.im / ln10
+    );
+    S.X = clean(result.re);
+    IM.X = clean(result.im);
+  } else {
+    S.X = Math.log10(S.X);
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// f 1,3 //////////////////////////////
+
+case "lblC":
+  shiftF = false;
+    entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  executeProgramLabel("C");
+  return;
+
+
+// 1,4 //////////////////////////////
+case "pow": {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  if (F[8]) {
+    //  build complex inputs
+    let y = complex(S.Y, IM.Y); // base
+    let x = complex(S.X, IM.X); // exponent
+    //  ln(y)
+    let lnY = cLn(y);
+    //  x * ln(y)
+    let prod = cMul(x, lnY);
+    //  exp(...)
+    let result = cExp(prod);
+    //  drop stack
+    drop();
+    //  store result
+    setX(result);
+  } else {
+    //  normal real case
+    const y = S.Y;
+    const x = S.X;
+    drop();
+    S.X = Math.pow(y, x);
+  }
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+
+// g 1,4 //////////////////////////////
+case "percent":{
+  if (entering) {
+S.X = parseFloat(inputBuffer || "0");
+}
+saveLastX();
+S.X=S.Y*S.X/100
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true; break;
+}
+
+// f 1,4 //////////////////////////////
+
+case "lblD":
+    entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  shiftF = false;
+  executeProgramLabel("D");
+  return;
+
+
+// 1,5 //////////////////////////////
+case "inv":
+// ✅ MATRIX CASE (custom behavior: leave S.X unchanged)
+if (isMatrix(S.X)) {
+  let name = S.X.name;
+  let A = M[name];
+  // Validate
+  if (!A || A.rows !== A.cols) {
+    S.X = NaN;
+    return;
+  }
+  // Compute inverse
+  let result = matrixInverse(A);
+  if (!result || Number.isNaN(result)) {
+    S.X = NaN;
+    return;
+  }
+  // ✅ Store ONLY in result matrix (DO NOT use storeMatrixResult)
+  let target = matrixResultTarget || "C";
+  M[target] = {
+    rows: result.rows,
+    cols: result.cols,
+    data: [...result.data]
+  };
+  // ✅ Leave S.X pointing to original matrix
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  return;
+}
+  //  ORIGINAL SCALAR / COMPLEX CODE
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8]) {
+    // complex inverse
+    let den = S.X * S.X + IM.X * IM.X;
+    if (den === 0) {
+      S.X = NaN;
+      IM.X = NaN;
+    } else {
+      let re = S.X / den;
+      let im = -IM.X / den;
+      S.X = re;
+      IM.X = im;
+    }
+  } else {
+    S.X = 1 / S.X;
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// g 1,5 //////////////////////////////
+case "deltapct": {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  if (S.X === 0) {
+    S.X = NaN;
+  } else {
+    S.X = ((S.X-S.Y) / S.Y) * 100;
+  }
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+
+// f 1,5 //////////////////////////////
+
+case "lblE":
+  shiftF = false;
+    entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  executeProgramLabel("E");
+  return;
+
+
+// 1,6 //////////////////////////////
+case "chs":
+
+if (pendingGotoLine) {
+    return;
+}
+
+
+
+
+  //  MATRIX CASE (HP behavior)
+  if (isMatrix(S.X)) {
+    let name = S.X.name;
+    let A = M[name];
+    if (!A || !A.rows || !A.cols) {
+      S.X = NaN;
+      return;
+    }
+    //  IN-PLACE negation
+    for (let i = 0; i < A.data.length; i++) {
+      A.data[i] = -A.data[i];
+    }
+    //  Do NOT change S.X reference
+    justCalculated = true;
+    liftOnNextDigit = true;
+    return;
+  }
+  if (shiftF) {
+    return;
+  }
+  if (entering) {
+    if (inputBuffer.toLowerCase().includes("e")) {
+      let parts = inputBuffer.split(/e/i);
+      let mantissa = parts[0];
+      let exponent = parts[1] || "0";
+      if (exponent.startsWith("-")) {
+        exponent = exponent.slice(1);
+      } else {
+        exponent = "-" + exponent;
+      }
+      inputBuffer = mantissa + "e" + exponent;
+      S.X = Number(inputBuffer);
+    } else {
+      if (inputBuffer.startsWith("-")) {
+        inputBuffer = inputBuffer.slice(1);
+      } else {
+        inputBuffer = "-" + inputBuffer;
+      }
+      S.X = Number(inputBuffer);
+    }
+  } else {
+    S.X = -S.X;
+  }
+  break;
+
+
+// g 1,6 //////////////////////////////
+case "abs":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+saveLastX();
+  if (F[8]){
+    S.X = Math.sqrt(S.X * S.X + IM.X * IM.X);
+    IM.X = 0;
+    entering = false;
+    inputBuffer = "";
+    justCalculated = true;
+    liftOnNextDigit = true;
+    break; 
+  }
+  S.X = Math.abs(S.X);
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break; 
+
+// f 1,6 //////////////////////////////
+
+
+// g 1,7 //////////////////////////////
+case "deg":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  angleMode = "DEG";
+  break;
+
+
+
+// f 1,7 //////////////////////////////
+case "fix":
+  pendingCommand = "SET_FIX";
+  prefixDisplay = "FIX";
+  //  CRITICAL: exit shift mode so next key is a digit
+  shiftF = false;
+  shiftG = false;
+  return;
+
+
+
+// g 1,8 //////////////////////////////
+case "rad":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  angleMode = "RAD";
+  break;
+
+// f 1,8 //////////////////////////////
+case "sci":
+    pendingCommand = "SET_SCI";
+    prefixDisplay = "SCI";
+    shiftF = false;
+    return;
+
+// g 1,9 //////////////////////////////
+case "grd":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  angleMode = "GRAD";
+  break;
+
+
+
+// f 1,9 //////////////////////////////
+case "eng":
+    pendingCommand = "SET_ENG";
+    prefixDisplay = "ENG";
+    shiftF = false;
+    return;
+
+// 1,0 //////////////////////////////
+case "div":
+  if (pendingCommand === "STO") {
+    pendingCommand = "STO/";
+    return;
+  }
+  if (pendingCommand === "RCL") {
+    pendingCommand = "RCL/";
+    return;
+  }
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  bin("div");
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// g 1,0 //////////////////////////////
+case "XlteY":
+  DoIfTrue = (S.X <= S.Y);
+  console.log("DoIfTrue:", DoIfTrue);
+  return;
+
+
+// 2,1 //////////////////////////////
+case "sst":
+  if (!programMode) return;
+  if (progSize === 0) return;
+  pc++;
+  if (pc > progSize) {
+      pc = 0;
+  }
+  updateDisplay();
+  return;
+
+
+// g 2,1 //////////////////////////////
+case "bst":
+  if (programMode) {
+    if (progSize === 0) return;
+    pc--;
+    if (pc < 0) {
+        pc = progSize;
+    }
+    buildBuffer = [];
+    shiftG = false;
+    updateDisplay();
+    return;
+  }
+  return;
+
+
+// 2,3 //////////////////////////////
+case "sin":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8] && (IM.X !== 0 || IM.Y !== 0 || IM.Z !== 0 || IM.T !== 0)) {
+    let z = complex(S.X, IM.X);
+    if (iHypMode) {
+      // asinh(z)
+      let result = cLn(cAdd(z, cSqrt(cAdd(cMul(z,z), complex(1)))));
+      setX(result);
+    }
+    else if (hypMode) {
+      let result = cSinh(z);
+      setX(result);
+    }
+    else {
+      let result = cSin(z);
+      setX(result);
+    }
+  } else {
+    if (iHypMode) S.X = clean(Math.asinh(S.X));
+    else if (hypMode) S.X = clean(Math.sinh(S.X));
+    else S.X = clean(Math.sin(toRad(S.X)));
+  }
+  hypMode = false;
+  iHypMode = false;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+
+
+// g 2,3 //////////////////////////////
+case "asin":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8] && (IM.X !== 0 || IM.Y !== 0 || IM.Z !== 0 || IM.T !== 0)) {
+    let z = complex(S.X, IM.X);
+    let iz = iMul(z);
+    let oneMinusZ2 = cSub(complex(1,0), cMul(z,z));
+    let sqrtPart = cSqrt(oneMinusZ2);
+    let lnArg = cAdd(iz, sqrtPart);
+    let ln = cLn(lnArg);
+    let result = negIMul(ln); // -i * ln(...)
+    S.X = clean(result.re);
+    IM.X = clean(result.im);
+  } else {
+    S.X = clean(fromRad(Math.asin(S.X)));
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+    // f 2,3 /////////////////////////
+case "dim":
+  if (pendingCommand === "RCL") {
+    pendingCommand = "RCL_DIM";
+    prefixDisplay = "RCL DIM";
+  } else {
+    pendingCommand = "DIM";
+    prefixDisplay = "DIM";
+  }
+  shiftG = false;
+  shiftF = false;
+  return;
+
+
+// 2,4 //////////////////////////////
+case "cos":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8] && (IM.X !== 0 || IM.Y !== 0 || IM.Z !== 0 || IM.T !== 0)) {
+    let z = complex(S.X, IM.X);
+    if (iHypMode) {
+      // acosh(z)
+      let result = cLn(
+        cAdd(
+          z,
+          cMul(
+            cSqrt(cAdd(z, complex(1))),
+            cSqrt(cSub(z, complex(1)))
+          )
+        )
+      );
+      setX(result);
+    }
+    else if (hypMode) {
+      setX(cCosh(z));
+    }
+    else {
+      setX(cCos(z));
+    }
+  } else {
+    if (iHypMode) S.X = clean(Math.acosh(S.X));
+    else if (hypMode) S.X = clean(Math.cosh(S.X));
+    else S.X = clean(Math.cos(toRad(S.X)));
+  }
+  hypMode = false;
+  iHypMode = false;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+
+// g 2,4 //////////////////////////////
+case "acos":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8] && (IM.X !== 0 || IM.Y !== 0 || IM.Z !== 0 || IM.T !== 0)) {
+    let z = complex(S.X, IM.X);
+    let z2minus1 = cSub(cMul(z,z), complex(1,0));
+    let sqrtPart = cSqrt(z2minus1);
+    let lnArg = cAdd(z, sqrtPart);
+    let ln = cLn(lnArg);
+    let result = negIMul(ln); // -i ln(...)
+    S.X = clean(result.re);
+    IM.X = clean(result.im);
+  } else {
+    S.X = clean(fromRad(Math.acos(S.X)));
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// f 2,4 //////////////////////////////
+case "viewIM":
+  // ✅ STO i (indirect store)
+  if (pendingCommand === "STO") {
+    let idx = getIndirectIndex();
+    if (idx === null) return;
+    R[idx] = S.X;
+    pendingCommand = null;
+    prefixDisplay = "";
+    entering = false;
+    inputBuffer = "";
+    liftOnNextDigit = true;
+    shiftF = false;
+    shiftG = false;
+    return;
+  }
+  // ✅ RCL i (indirect recall)
+  if (pendingCommand === "RCL") {
+    let idx = getIndirectIndex();
+    push(S.X);
+    S.X = R[idx];
+    pendingCommand = null;
+    prefixDisplay = "";
+    entering = false;
+    inputBuffer = "";
+    liftOnNextDigit = true;
+    shiftF = false;
+    shiftG = false;
+    return;
+  }
+  // ✅ ORIGINAL viewIM behavior (unchanged below)
+  shiftF = false;
+  shiftG = false;
+  if (!F[8]) {
+    entering = true;
+    inputBuffer = "Error 3";
+    return;
+  }
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  break;
+
+
+// 2,5 //////////////////////////////
+case "tan":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8] && (IM.X !== 0 || IM.Y !== 0 || IM.Z !== 0 || IM.T !== 0)) {
+    let z = complex(S.X, IM.X);
+    if (iHypMode) {
+      // atanh(z)
+      let one = complex(1);
+      let result = cMul(
+        complex(0.5),
+        cLn(
+          cDiv(
+            cAdd(one, z),
+            cSub(one, z)
+          )
+        )
+      );
+      setX(result);
+    }
+    else if (hypMode) {
+      setX(cTanh(z));
+    }
+    else {
+      setX(cTan(z));
+    }
+  } else {
+    if (iHypMode) S.X = clean(Math.atanh(S.X));
+    else if (hypMode) S.X = clean(Math.tanh(S.X));
+    else S.X = clean(Math.tan(toRad(S.X)));
+  }
+  hypMode = false;
+  iHypMode = false;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+
+  // g 2,5 //////////////////////////////
+case "atan":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  if (F[8] && (IM.X !== 0 || IM.Y !== 0 || IM.Z !== 0 || IM.T !== 0)) {
+    let z = complex(S.X, IM.X);
+    let iz = iMul(z);
+    let oneMinusIZ = cSub(complex(1,0), iz);
+    let onePlusIZ  = cAdd(complex(1,0), iz);
+    let frac = cDiv(oneMinusIZ, onePlusIZ);
+    let ln = cLn(frac);
+    let result = cMulScalar(iMul(ln), 0.5); // i/2 * ln(...)
+    S.X = clean(result.re);
+    IM.X = clean(result.im);
+  } else {
+    S.X = clean(fromRad(Math.atan(S.X)));
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// f 2,5 //////////////////////////////
+
+case "toI":
+  // ✅ STO I
+  if (pendingCommand === "STO") {
+    R[REG_I] = S.X;
+    pendingCommand = null;
+    prefixDisplay = "";
+    entering = false;
+    inputBuffer = "";
+    liftOnNextDigit = true;
+    return;
+  }
+  // ✅ RCL I
+  if (pendingCommand === "RCL") {
+    push(S.X);
+    S.X = R[REG_I];
+    pendingCommand = null;
+    prefixDisplay = "";
+    entering = false;
+    inputBuffer = "";
+    liftOnNextDigit = true;
+    return;
+  }
+  // ✅ NORMAL BEHAVIOR (ONLY if not STO/RCL)
+  if (!F[8]) {
+    F[8] = true;
+  }
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  IM.Y = S.X;
+  IM.X = IM.Y; IM.Y = IM.Z; IM.Z = IM.T;
+  S.X = S.Y;   S.Y = S.Z;   S.Z = S.T;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// 2,6 //////////////////////////////
+case "eex":
+  if (justCalculated) {
+    inputBuffer = S.X.toString();
+    justCalculated = false;
+    entering = true;
+  }
+if (!entering) {
+  if (!continueEntry) {
+    inputBuffer = "";
+  }
+  entering = true;
+}
+continueEntry = false;
+  if (!inputBuffer.toLowerCase().includes("e")) {
+    inputBuffer += "e0";   //  IMPORTANT: initialize exponent
+  }
+  S.X = Number(inputBuffer);  //  keep X in sync
+  break;
+
+// g 2,6 //////////////////////////////
+case "pi": {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  push(S.X);
+  saveLastX();
+  S.X = Math.PI;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+// f 2,6 //////////////////////////////
+case "result":
+  // ✅ RCL RESULT behavior
+  if (pendingCommand === "RCL") {
+    push(S.X);  // HP lift behavior
+    let target = matrixResultTarget || "C";
+    S.X = matrixRef(target);
+    pendingCommand = null;
+    prefixDisplay = "";
+    entering = false;
+    inputBuffer = "";
+    liftOnNextDigit = true;
+    return;
+  }
+  // ✅ NORMAL f RESULT (designation mode)
+  pendingResultTarget = true;
+  prefixDisplay = "RESULT";
+  shiftF = false;
+  shiftG = false;
+  return;
+
+
+// f 2,7 //////////////////////////////
+case "xchg_reg":
+
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    //  DO NOT clear inputBuffer
+    //  DO NOT set entering = false
+  }
+  pendingCommand = "XCHG";
+  prefixDisplay = "X↔";
+  registerDecimal = false;
+  liftOnNextDigit = false;
+  shiftF = false;
+  shiftG = false;
+  return;
+
+
+// g 2,7 //////////////////////////////
+case "SF":
+  pendingCommand = "SF";
+  prefixDisplay = "SF";
+  registerDecimal = false;
+  liftOnNextDigit = false;
+  shiftG = false;
+  return;
+
+
+// g 2,8 //////////////////////////////
+case "CF":
+  pendingCommand = "CF";
+  prefixDisplay = "CF";
+  registerDecimal = false;
+  liftOnNextDigit = false;
+  shiftG = false;
+  return;
+
+// g 2,9 //////////////////////////////
+case "FS":
+    pendingCommand = "FS";
+    prefixDisplay = "F?";
+    shiftG = false;
+    return;
+
+// 2,0 //////////////////////////////
+case "mul":
+
+  if (pendingCommand === "STO") {
+    pendingCommand = "STO*";
+    return;
+  }
+  if (pendingCommand === "RCL") {
+    pendingCommand = "RCL*";
+    return;
+  }
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  bin("mul");
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// g 2,0 //////////////////////////////
+case "Xe0":
+    DoIfTrue = (S.X === 0);
+    return;
+
+
+// g 2,2 //////////////////////////////
+case "iHyp":
+  iHypMode = !iHypMode;  // toggle
+  hypMode = false;
+  shiftF = false;
+  shiftG = false;
+  return;
+
+// f 2,2 //////////////////////////////
+case "hyp":
+  hypMode = !hypMode;   // toggle
+  iHypMode = false;
+  shiftF = false;
+  shiftG = false;
+  return;
+
+// g 3,1 //////////////////////////////
+case "PR":
+  programMode = !programMode;   // TOGGLE
+  if (programMode) {
+  }
+  updateDisplay();
+  return;
+
+// f 3,1 //////////////////////////////
+case "PSE":
+    if (execRunning) {
+        execPauseUntil = Date.now() + 1000; // 1 second
+    }
+    return;
+
+
+// f 3,2 //////////////////////////////
+case "sigma": {
+  for (let i = 2; i <= 7; i++) {
+    R[i] = 0;
+  }
+  // clear stack
+  S.X = 0;
+  S.Y = 0;
+  S.Z = 0;
+  S.T = 0;
+  lastX = 0;
+  break;
+}
+
+// 3,3 //////////////////////////////
+case "rolldown": {
+  let t = S.X;
+  let it = IM.X;
+  S.X = S.Y;
+  IM.X = IM.Y;
+  S.Y = S.Z;
+  IM.Y = IM.Z;
+  S.Z = S.T;
+  IM.Z = IM.T;
+  S.T = t;
+  IM.T = it;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+}
+
+// g 3,3 //////////////////////////////
+case "rollup": {
+  let t = S.T;
+  let IMt = IM.T;
+  S.T = S.Z;
+  IM.T = IM.Z;
+  S.Z = S.Y;
+  IM.Z = IM.Y;
+  S.Y = S.X;
+  IM.Y = IM.X;
+  S.X = t;
+  IM.X = IMt;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+}
+
+// f 3,3 //////////////////////////////
+case "prgm":
+  if (!programMode) {
+    pc = 1;
+  }
+  else if (programMode) {
+    // ✅ clear program memory
+    prog = new Array(MAX_STEPS).fill(null);
+    pc = 0;
+    progSize = 0;
+    labels = {};
+    callStack = [];
+    buildBuffer = [];
+    state = "IDLE";
+    console.log("Program memory cleared");
+    updateDisplay();
+  }
+  shiftF = false;
+  shiftG = false;
+  return;
+
+
+// 3,4 //////////////////////////////
+case "swap": [S.X,S.Y]=[S.Y,S.X];
+  if (F[8]) {
+    [IM.X,IM.Y]=[IM.Y,IM.X];
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true; break;
+
+  // g 3,4 //////////////////////////////
+case "rnd": {
+  //  finalize entry
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  //  Use YOUR display formatter to determine rounding
+  let formatted = fmt(S.X);
+  S.X = parseFloat(formatted);
+  let formattedIM = fmt(IM.X);
+  IM.X = parseFloat(formattedIM);
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+// f 3,4 //////////////////////////////
+case "reg":
+  //  Clear ALL registers 0–19
+  R.fill(0);
+  //  No stack change
+  entering = false;
+  inputBuffer = "";
+  //  Do NOT trigger stack lift
+  liftOnNextDigit = false;
+  //  Clear shifts (since this is f-initiated)
+  shiftF = false;
+  shiftG = false;
+return;
+
+
+// 3,5 //////////////////////////////
+case "backspace":
+  if (programMode) {
+    if (progSize === 0) return;
+    prog.splice(pc, 1);   // ✅ delete exactly one instruction
+    progSize--;
+    if (pc >= progSize) {
+      pc = Math.max(0, progSize);
+    }
+    updateDisplay();
+    return;
+  }
+  backspace(); // normal mode
+  return;
+
+  
+// g 3,5 //////////////////////////////
+
+case "clx": 
+  S.X = 0;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = false;
+  liftOnNextDigit = false;
+  break;
+
+
+// f 3,5 //////////////////////////////
+case "prefix":
+  //  Cancel all pending prefix commands
+  pendingCommand = "";
+  prefixDisplay = "";
+  registerDecimal = false;
+  //  ALSO clear shifts
+  shiftF = false;
+  shiftG = false;
+  break;
+
+
+// g 3,7 //////////////////////////////
+case "toPol": {
+  // g →P
+  // Rectangular to polar conversion.
+  //
+  // Real mode:
+  //   input:  X = x, Y = y
+  //   output: X = r, Y = theta
+  //
+  // Complex mode, HP-15C Section 11:
+  //   input:  real X = a, imaginary X = b
+  //   output: real X = r, imaginary X = theta
+  //
+  // theta follows the current trigonometric mode.
+
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+
+  saveLastX();
+
+  if (F[8]) {
+    // Complex rectangular → complex polar.
+    // a + ib  becomes  r ∠ theta.
+    const a = S.X;
+    const b = IM.X;
+
+    const r = Math.hypot(a, b);
+    const theta = fromRad(Math.atan2(b, a));
+
+    S.X = clean(r);
+    IM.X = clean(theta);
+
+    // Do NOT use S.Y.
+    // Do NOT disturb the rest of the real or imaginary stack.
+    entering = false;
+    inputBuffer = "";
+    justCalculated = true;
+    liftOnNextDigit = true;
+    shiftF = false;
+    shiftG = false;
+    break;
+  }
+
+  // Normal real-stack coordinate conversion.
+  const x = S.X;
+  const y = S.Y;
+
+  const r = Math.hypot(x, y);
+  const theta = fromRad(Math.atan2(y, x));
+
+  S.X = clean(r);
+  S.Y = clean(theta);
+
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  shiftF = false;
+  shiftG = false;
+  break;
+}
+
+// f 3,7 //////////////////////////////
+case "toRec": {
+  // f →R
+  // Polar to rectangular conversion.
+  //
+  // Real mode:
+  //   input:  X = r, Y = theta
+  //   output: X = x, Y = y
+  //
+  // Complex mode, HP-15C Section 11:
+  //   input:  real X = r, imaginary X = theta
+  //   output: real X = a, imaginary X = b
+  //
+  // theta follows the current trigonometric mode.
+
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+
+  saveLastX();
+
+  if (F[8]) {
+    // Complex polar → complex rectangular.
+    // r ∠ theta becomes a + ib.
+    const r = S.X;
+    const theta = toRad(IM.X);
+
+    const a = r * Math.cos(theta);
+    const b = r * Math.sin(theta);
+
+    S.X = clean(a);
+    IM.X = clean(b);
+
+    // Do NOT use S.Y.
+    // Do NOT disturb the rest of the real or imaginary stack.
+    entering = false;
+    inputBuffer = "";
+    justCalculated = true;
+    liftOnNextDigit = true;
+    shiftF = false;
+    shiftG = false;
+    break;
+  }
+
+  // Normal real-stack coordinate conversion.
+  const r = S.X;
+  const theta = toRad(S.Y);
+
+  const x = r * Math.cos(theta);
+  const y = r * Math.sin(theta);
+
+  S.X = clean(x);
+  S.Y = clean(y);
+
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  shiftF = false;
+  shiftG = false;
+  break;
+}
+
+
+
+
+// f 3,8 //////////////////////////////
+case "toHMS": {
+  // If user was typing, finalize input first
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  let h = S.X;
+  let hours = Math.trunc(h);
+  let minutesFull = (h - hours) * 60;
+  let minutes = Math.trunc(minutesFull);
+  let seconds = (minutesFull - minutes) * 60;
+  //  Round to 1/100000 second
+  seconds = Math.round(seconds * 100000) / 100000;
+  //  Handle rollover (important!)
+  if (seconds >= 60) {
+    seconds -= 60;
+    minutes += 1;
+  }
+  if (minutes >= 60) {
+    minutes -= 60;
+    hours += 1;
+  }
+  //  Pack into H.MMSSsssss format
+  // (HP-style encoded decimal)
+  let result =
+      hours +
+      minutes / 100 +
+      seconds / 10000;
+  S.X = result;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+}
+
+// g 3,8 //////////////////////////////
+case "toH": {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  let x = S.X;
+  let hours = Math.trunc(x);
+  // Get fractional part as clean string
+  let frac = (x - hours).toFixed(10).slice(2);
+  // Ensure enough digits
+  frac = frac.padEnd(7, "0");
+  // Extract components
+  let minutes = parseInt(frac.slice(0, 2)) || 0;
+  //  Proper seconds reconstruction
+  let secDigits = frac.slice(2);
+  let seconds = parseFloat(secDigits) / Math.pow(10, secDigits.length - 2);
+  // Convert to decimal hours
+  let result =
+      hours +
+      (minutes / 60) +
+      (seconds / 3600);
+  S.X = result;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+}
+
+
+
+// f 3,9 //////////////////////////////
+case "toRad": {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  S.X = S.X * Math.PI / 180;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+}
+
+
+
+// g 3,9 //////////////////////////////
+case "toDeg": {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  //  Convert radians → degrees
+  S.X = S.X * 180 / Math.PI;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+}
+
+
+
+// 3,0 //////////////////////////////
+case "sub":
+  if (pendingCommand === "STO") {
+    pendingCommand = "STO-";
+    return;
+  }
+  if (pendingCommand === "RCL") {
+    pendingCommand = "RCL-";
+    return;
+  }
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  bin("sub");
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// f 3,0 //////////////////////////////
+case "reim":
+if (!F[8]) {
+  F[8] = true;
+}
+  let IMx = IM.X;
+  IM.X = S.X;
+  S.X = IMx
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// g 3,0 //////////////////////////////
+case "test":
+  pendingCommand = "TEST";
+  prefixDisplay = "TEST";
+  shiftG = false;
+  return;
+
+
+// 4,1 //////////////////////////////
+case "on":
+    if (powerOn) {
+        saveToBrowser();
+        powerOn = false;
+        document
+            .getElementById("display")
+            .classList.add("off");
+        return;
+    }
+    powerOn = true;
+    document
+        .getElementById("display")
+        .classList.remove("off");
+    loadFromBrowser();
+    updateDisplay();
+    return;
+
+
+// 4,2 //////////////////////////////
+case "shiftF":
+  // Toggle f
+  if (shiftF) {
+    shiftF = false;
+  } else {
+    shiftF = true;
+    shiftG = false; //  turn off g
+  }
+  hypMode = false;
+  iHypMode = false;
+  return;
+
+
+  
+// 4,3 //////////////////////////////
+case "shiftG":
+  // Toggle g
+  if (shiftG) {
+    shiftG = false;
+  } else {
+    shiftG = true;
+    shiftF = false; //  turn off f
+  }
+  hypMode = false;
+  iHypMode = false;
+  return;
+
+
+// 4,4 //////////////////////////////
+case "sto":
+// STO TO REG I
+if (pendingCommand === "STO" && i.op === "toI") {
+  R[REG_I] = S.X;   // ✅ store raw X exactly
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  return;
+}
+  //  MATRIX ENTRY MODE HANDLING
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    //  DO NOT clear inputBuffer
+  }
+  pendingCommand = "STO";
+  prefixDisplay = "STO";
+  registerDecimal = false;
+  liftOnNextDigit = false;
+  return;
+
+  // g 4,4 //////////////////////////////
+case "int":
+  S.X = Math.trunc(S.X);
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+
+// f 4,4 //////////////////////////////
+case "frac":
+  S.X = S.X - Math.trunc(S.X);
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true; liftOnNextDigit = true;
+  break;
+
+
+// 4,5 //////////////////////////////
+case "rcl":
+//RECALL REG I MEMORY REGISTER I
+if (pendingCommand === "RCL" && i.op === "toI") {
+  push(S.X);             // ✅ HP stack lift
+  S.X = R[REG_I];         // ✅ raw value back
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  return;
+}
+//MATRIX RECALL ??
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  // ✅ Enter RCL mode
+  pendingCommand = "RCL";
+  prefixDisplay = "RCL";
+  registerDecimal = false;
+  liftOnNextDigit = true;
+  entering = false;
+  inputBuffer = "";
+  return;
+
+
+// f 4,5 //////////////////////////////
+case "user":
+  USER = !USER;
+  shiftF = false;
+  shiftG = false;
+  break;
+
+
+// 4,6 //////////////////////////////
+case "enter":
+  if (entering) {
+    push(parseFloat(inputBuffer || "0"));
+    inputBuffer = "";
+    entering = false;
+  } else {
+    push(S.X);
+  }
+  liftOnNextDigit = false;
+  justCalculated = false;
+  break;
+
+
+// g 4,6 //////////////////////////////
+case "lstx": {
+  //  Only push if stack lift is enabled
+  if (liftOnNextDigit) {
+    push(S.X);
+  }
+  //  Load last X
+  S.X = lastX;
+  IM.X = lastIMX;
+  //  Exit entry mode
+  entering = false;
+  inputBuffer = "";
+  //  Disable further lift (optional but recommended)
+  liftOnNextDigit = true;
+  break;
+}
+
+
+// f 4,6 //////////////////////////////
+case "random":
+
+  //  STO f RAN#
+  if (pendingCommand === "STO") {
+    exec({ op: "rng_store" });
+    pendingCommand = null;
+    liftOnNextDigit = true;   //  arm next entry
+    return;
+  }
+  //  RCL f RAN#
+  if (pendingCommand === "RCL") {
+    exec({ op: "rng_recall" });
+    pendingCommand = null;
+    liftOnNextDigit = true;   //  arm next entry
+    return;
+  }
+  //  NORMAL RAN#
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  S.X = hpRand();
+  liftOnNextDigit = true;
+shiftF = false;
+shiftG = false;
+  break;
+  case "rng_store":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  let v = S.X % 1;
+  if (v < 0) v += 1;
+  rngSeed = v;
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  break;
+case "rng_recall":
+  S.X = rngSeed;
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = true;
+  break;
+
+
+
+
+
+// f 4,7 //////////////////////////////
+case "fact":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+saveLastX();
+  if (S.X < 0) {
+    S.X = NaN;
+  } else if (Number.isInteger(S.X)) {
+    let r = 1;
+    for (let i = 2; i <= S.X; i++) r *= i;
+    S.X = r;
+  } else {
+    S.X = gamma(S.X + 1);
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// g 4,7 //////////////////////////////
+case "xbar":
+  if (R[6] > 0) {
+    inputBuffer = "";
+    push(S.X)
+    S.Y = R[5]/R[2];
+  }
+  S.X = R[3]/R[2];
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+
+// 4,8 //////////////////////////////
+case "dot":
+  
+    console.log("DOT", pendingCommand);
+
+    if (pendingCommand === "GSB") {
+        console.log("GSB_DOT ARMED");
+
+        pendingCommand = "GSB_DOT";
+        prefixDisplay = "GSB .";
+        return;
+    }
+
+if (pendingCommand === "GSB") {
+    pendingCommand = "GSB_DOT";
+    prefixDisplay = "GSB .";
+    return;
+}
+console.log("DOT HANDLER", pendingCommand);
+  //  If selecting register → act as prefix
+if (
+  pendingCommand &&
+  (
+    pendingCommand.startsWith("STO") ||
+    pendingCommand.startsWith("RCL") ||
+    pendingCommand === "XCHG"
+  )
+)
+{
+    registerDecimal = true;
+    return;
+  }
+  //  Otherwise → normal decimal entry
+  dot();
+  return;
+
+// g 4,8 //////////////////////////////
+case "sdev": {
+  if (R[6] > 0) {
+    inputBuffer = "";
+    push(S.X);
+    let N = R[2] * R[6] - R[5] * R[5];
+    S.Y = Math.sqrt(N / (R[2] * (R[2] - 1)));
+  }
+  let M = R[2] * R[4] - R[3] * R[3];
+  S.X = Math.sqrt(M / (R[2] * (R[2] - 1)));
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+// f 4,8 //////////////////////////////
+case "ybarR": {
+  inputBuffer = "";
+  push(S.X);
+  let N = R[2] * R[6] - R[5] * R[5];
+  let M = R[2] * R[4] - R[3] * R[3];
+  let P = R[2] * R[7] - R[3] * R[5];
+  let x = S.X;
+  S.Y = P / Math.sqrt(M *N); // r
+  S.X = (M * R[5] + P * (R[2] * x - R[3]))/(R[2] * M) // yBar
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+
+// 4,9 //////////////////////////////
+case "sigmaplus": {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  if (pendingCommand === "RCL") {
+    saveLastX();
+    push(S.X);
+    S.Y = R[5];
+    S.X = R[3];
+    entering = false;
+    inputBuffer = "";
+    justCalculated = true;
+    liftOnNextDigit = true;
+  break;
+  }
+  //  Save LAST X
+let n = S.X;
+  //  increment n
+  R[2]++;
+  //  accumulate statistics
+  R[3] += S.X;
+  R[4] += S.X * S.X;
+  R[5] += S.Y;
+  R[6] += S.Y * S.Y;
+  R[7] += S.X * S.Y;
+  entering = false;
+  inputBuffer = "";
+  //  Show n
+  S.X = R[2];
+  lastX = n;
+  liftOnNextDigit = false;
+  break;
+}
+
+// g 4,9 //////////////////////////////
+case "sigmaminus": {
+  //  If user was typing, finalize input
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  //  Save LAST X
+let n = S.X;
+  //  decrement n
+  R[2]--;
+  //  update statistics (important for stability)
+  R[3] -= S.X;
+  R[4] -= S.X * S.X;
+  R[5] -= S.Y;
+  R[6] -= S.Y * S.Y;
+  R[7] -= S.X * S.Y;
+  entering = false;
+  inputBuffer = "";
+  //  Show n
+  S.X = R[2];
+  lastX = n;
+  liftOnNextDigit = false;
+break;
+}
+
+// f 4,9 //////////////////////////////
+case "linReg": {
+  inputBuffer = "";
+  push(S.X);
+  let M = R[2] * R[4] - R[3] * R[3];
+  let P = R[2] * R[7] - R[3] * R[5];
+  S.Y = P / M; // Slope A in Y = AX + B or m in Y = mX + b
+  S.X = (M * R[5] - P * R[3])/(R[2] * M); // Y-intercept B in Y = AX + B or b in Y = mX + b
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+break;
+}
+
+
+ 
+// 4,0 //////////////////////////////
+case "add":
+  if (pendingCommand === "STO") {
+    pendingCommand = "STO+";
+    return;
+  }
+  if (pendingCommand === "RCL") {
+    pendingCommand = "RCL+";
+    return;
+  }
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+  }
+  saveLastX();
+  bin("add");
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+
+// f 4,0 //////////////////////////////
+case "perm": {
+    // ✅ MATRIX OVERRIDE (Zc → Zp)
+  if (isMatrix(S.X)) {
+    Zc_to_Zp();
+    break;
+  }
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  let r = S.X;
+  let n = S.Y;
+  drop();
+  if (n < 0 || r < 0 || r > n) {
+    S.X = NaN;
+  } else {
+    S.X = gamma(n + 1) / gamma(n - r + 1);
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+// g 4,0 //////////////////////////////
+case "comb": {
+  
+  // ✅ MATRIX OVERRIDE (Zp → Zc)
+  if (isMatrix(S.X)) {
+    Zp_to_Zc();
+    break;
+  }
+
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  saveLastX();
+  let r = S.X;
+  let n = S.Y;
+  drop();
+  //  validation (important for stability)
+  if (
+    n < 0 ||
+    r < 0 ||
+    r > n ||
+    !Number.isFinite(n) ||
+    !Number.isFinite(r)
+  ) {
+    S.X = NaN;
+  } else {
+    S.X = gamma(n + 1) / (gamma(r + 1) * gamma(n - r + 1));
+  }
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  break;
+}
+
+
+case "rs":
+    if (execRunning) {
+        execRunning = false;
+        return;
+    }
+    if (execPC > 0) {
+        execRunning = true;
+        console.log("CALLING STEP");
+        step();
+        return;
+    }
+    runProgram();
+    return;
+
+
+case "lbl":
+  pendingCommand = "LBL";
+  prefixDisplay = "LBL";   // ✅ show prefix like STO/RCL
+  shiftF = false;
+  shiftG = false;
+  return;
+
+
+case "gto":
+  pendingCommand = "GTO";   // ✅ first stage (label OR numeric)
+  pendingGotoLine = false;  // ✅ not numeric yet
+  gotoBuffer = "";
+  prefixDisplay = "GTO";
+  return;
+
+
+
+case "gsb":
+    pendingCommand = "GSB";
+    prefixDisplay = "GSB";
+    shiftF = false;
+    shiftG = false;
+    return;
+
+
+case "rtn":
+    execPC = callStack.pop();
+    if (callStack.length === 0) {
+        execRunning = false;
+        finishProgram();
+        return;
+    }
+    programJumped = true;
+
+
+
+
+    
+console.log(
+    "RTN",
+    "stack=", JSON.stringify(callStack),
+    "execPC=", execPC
+);
+
+
+if (callStack.length === 0) {
+    console.log("TOP LEVEL RTN");
+    execRunning = false;
+    finishProgram();
+    return;
+}
+
+
+
+
+
+    return;
+
+
+case "integrate":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+
+  pendingCommand = "INTEGRATE";
+  prefixDisplay = "∫";
+  shiftF = false;
+  shiftG = false;
+  liftOnNextDigit = true;
+  return;
+
+case "solve":
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+
+  pendingCommand = "SOLVE";
+  prefixDisplay = "SOLVE";
+  shiftF = false;
+  shiftG = false;
+  liftOnNextDigit = true;
+  return;
+
+
+
+
+
+
+
+
+case "matrix_mode":
+
+  //  RCL MATRIX (DESCRIPTOR)
+  if (pendingCommand === "RCL") {
+    pendingCommand = "RCL_MATRIX_SELECT";
+    prefixDisplay = "RCL MATRIX";
+
+    shiftF = false;
+    shiftG = false;
+
+    entering = false;
+    inputBuffer = "";
+
+    return;
+  }
+
+
+  //  STO MATRIX (future-proof)
+  if (pendingCommand === "STO") {
+    pendingCommand = "STO_MATRIX";
+    prefixDisplay = "STO MATRIX";
+  // ✅ HARD RESET LIKE RCL PATH
+  shiftF = false;
+  shiftG = false;
+  entering = false;
+  inputBuffer = "";
+  liftOnNextDigit = false;
+  return;
+}
+
+
+  //  f MATRIX (your advanced mode)
+  if (shiftF) {
+    pendingCommand = "MATRIX_CMD";
+    prefixDisplay = "MATRIX";
+    shiftF = false;
+    shiftG = false;
+    return;
+  }
+
+  return; //  ALWAYS block CHS
+
+
+
+// ✅ One-shot shift (HP behavior)
+if (i.op !== "shiftF" && i.op !== "shiftG") {
+  shiftF = false;
+  shiftG = false;
+}
+}
+}
+
+
+function openMatrix(name, rows, cols){
+  const editor = document.getElementById("matrixEditor");
+  const grid = document.getElementById("matrixGrid");
+  editor.style.display = "flex";
+  // update title
+  editor.querySelector("h3").innerText = `Matrix Editor (${name})`;
+  grid.innerHTML = "";
+  let m = M[name];
+  for(let r=0; r<rows; r++){
+    let rowDiv = document.createElement("div");
+    rowDiv.style.display = "flex";
+    for(let c=0; c<cols; c++){
+      let input = document.createElement("input");
+      input.type = "number";
+      input.style.width = "60px";
+      input.style.margin = "2px";
+      let index = r * cols + c;
+      input.value = m.data[index];
+      input.dataset.index = index;
+      rowDiv.appendChild(input);
+    }
+    grid.appendChild(rowDiv);
+  }
+}
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function executeProgramLabel(label) {
+
+    rebuildLabels();
+
+    if (!(label in labels)) {
+        displayError = "Error 4";
+        updateDisplay();
+        return;
+    }
+
+    callStack = [];
+
+    execPC = labels[label] + 1;
+
+entering = false;
+inputBuffer = "";
+continueEntry = false;
+
+    execRunning = true;
+console.log("CALLING STEP");
+    step();
+}
+
+function executeGSB(label) {
+
+entering = false;
+inputBuffer = "";
+continueEntry = false;
+liftOnNextDigit = true;
+
+console.log(
+    "EXECUTEGSB",
+    "label=", label,
+    "labels=", labels
+);
+
+    rebuildLabels();
+
+    // Label not found
+    if (!(label in labels)) {
+
+        displayError = "Error 4";
+        updateDisplay();
+
+        pendingCommand = null;
+        prefixDisplay = "";
+
+        return;
+    }
+
+    // HP-15C: maximum 7 nested GSBs
+    if (callStack.length >= 7) {
+
+        displayError = "error 5";
+        updateDisplay();
+
+        finishProgram();
+        return;
+    }
+
+    pendingCommand = null;
+    prefixDisplay = "";
+
+    // Program already running -> subroutine call
+    if (execRunning) {
+
+
+
+callStack.push(execPC + 1);
+execPC = labels[label] + 1;
+programJumped = true;
+return;
+
+
+    }
+
+    // Manual GSB from keyboard
+    callStack = [];
+
+    
+entering = false;
+inputBuffer = "";
+continueEntry = false;
+
+
+execPC = labels[label] + 1;
+programJumped = false;
+execRunning = true;
+console.log("CALLING STEP");
+step();
+
+}
+
+function rebuildLabels() {
+
+    labels = {};
+
+    for (let i = 0; i <= progSize; i++) {
+
+        const step = prog[i];
+
+        if (!step || !step.bytes) continue;
+
+        const b = step.bytes;
+
+        // LBL A-E
+        if (
+            b.length === 3 &&
+            b[0] === "42" &&
+            b[1] === "21" &&
+            Number(b[2]) >= 11 &&
+            Number(b[2]) <= 15
+        ) {
+            const map = {
+                "11":"A",
+                "12":"B",
+                "13":"C",
+                "14":"D",
+                "15":"E"
+            };
+
+            labels[map[b[2]]] = i;
+            continue;
+        }
+
+        // LBL 0-9
+        if (
+            b.length === 3 &&
+            b[0] === "42" &&
+            b[1] === "21"
+        ) {
+            let key = decodeDigitLabel(b[2]);
+
+            if (key !== null) {
+                labels[key] = i;
+                continue;
+            }
+        }
+
+        // LBL .0-.9
+
+if (
+    b.length === 3 &&
+    b[0] === "42" &&
+    b[1] === "21" &&
+    typeof b[2] === "string" &&
+    b[2].startsWith(".")
+) {
+    labels[b[2]] = i;
+}
+
+    }
+
+    console.log("LABELS:", labels);
+}
+
+
+function decodeDigitLabel(byte) {
+
+    const map = {
+        "47":"0",
+        "37":"1",
+        "38":"2",
+        "39":"3",
+        "27":"4",
+        "28":"5",
+        "29":"6",
+        "17":"7",
+        "18":"8",
+        "19":"9"
+    };
+
+    return map[byte] ?? null;
+}
+
+
+
+function findLabel(label) {
+
+    rebuildLabels();
+
+    if (!(label in labels)) {
+        displayError = "Error 4";
+        updateDisplay();
+        return null;
+    }
+
+    return labels[label];
+}
+
+
+
+function makeDigitLabel(digit) {
+    return String(digit);
+}
+
+function makeLocalLabel(digit) {
+    return "." + String(digit);
+}
+
+
+
+  function getIndirectIndex() {
+    let idx = Math.trunc(Math.abs(R[REG_I]));
+  if (idx > 65) {
+  entering = true;
+  inputBuffer = "Error 3";
+  }
+  return idx;
+  }
+
+function runTest(n) {
+  let x = S.X;
+  let y = S.Y;
+
+  switch (n) {
+
+    case 0: // x ≠ 0
+      DoIfTrue = (x !== 0);
+      break;
+
+    case 1: // x > 0
+      DoIfTrue = (x > 0);
+      break;
+
+    case 2: // x < 0
+      DoIfTrue = (x < 0);
+      break;
+
+    case 3: // x greater than or equal to 0
+      DoIfTrue = (x >=0);
+      break;
+
+    case 4: // x less than or equal to 0
+      DoIfTrue = (x <= 0);
+      break;
+
+    case 5: // x = y
+      DoIfTrue = (x === y);
+      break;
+
+    case 6: // x not equal to y
+      DoIfTrue = (!(x === y));
+      break;
+
+    case 7: // x > y
+      DoIfTrue = (x > y);
+      break;
+
+    case 8: // x < y
+      DoIfTrue = (x < y);
+      break;
+
+    case 9: // x greater than or equal to y
+      DoIfTrue = (x >= y);
+      break;
+
+    default:
+      DoIfTrue = false;
+  }
+}
+
+function formatProgramLine(step) {
+  let line = prog[step];
+
+  if (!line || !line.bytes) {
+    return `${step.toString().padStart(3,"0")}-`;
+  }
+
+  let bytes = line.bytes;
+  let out = [];
+
+  // ✅ Detect STO / RCL
+  const isStoRcl =
+    bytes.length > 0 &&
+    (bytes[0] === "44" || bytes[0] === "45");
+
+  for (let i = 0; i < bytes.length; i++) {
+    let b = bytes[i];
+    
+    if (typeof b === "string" && b.startsWith(".")) {
+        out.push(b);
+        continue;
+    }
+
+    let instr = decodeByte(b);
+
+    // ✅ STO / RCL always show raw
+    if (b === "44" || b === "45") {
+      out.push(b);
+      continue;
+    }
+
+    // ✅ OPERATORS also raw
+    if (["40","41","42","43"].includes(b)) {
+      out.push(b);
+      continue;
+    }
+
+
+// ✅ DOT HANDLING (HP-style merge ALWAYS)
+if (instr.op === "dot") {
+
+  if (i + 1 < bytes.length) {
+    let next = bytes[i + 1];
+    let nextInstr = decodeByte(next);
+
+    if (nextInstr.op === "digit") {
+      out.push("." + nextInstr.v);
+      i++; // consume digit
+      continue;
+    }
+  }
+
+  // fallback (rare)
+  out.push(".");
+  continue;
+}
+
+
+    // ✅ DIGIT (use decoder — IMPORTANT)
+    if (instr.op === "digit") {
+      out.push(instr.v.toString());
+      continue;
+    }
+
+    // ✅ default
+    out.push(b);
+  }
+
+  return `${step.toString().padStart(3,"0")}- ${out.join(",")}`;
+}
+
+
+function decodeByte(byte) {
+
+  if (!byte) {
+    console.warn("Bad byte:", byte);
+    return { op: "noop" };
+  }
+
+  // ✅ DIGIT (your format)
+  if (byte.length === 1 && byte >= "0" && byte <= "9") {
+    return { op: "digit", v: Number(byte) };
+  }
+
+  // ✅ DOT DIGIT (.n)
+  if (byte.startsWith("dot")) {
+    return { op: "dotdigit", v: Number(byte.slice(3)) };
+  }
+
+  // ✅ NORMAL 2-byte key decode
+  if (byte.length === 2) {
+
+    let r = Number(byte[0]);
+    let c = Number(byte[1]);
+
+    let key = `${r},${c}`;
+
+    let instr =
+      keyMap.normal[key] ||
+      keyMap.f[key] ||
+      keyMap.g[key];
+
+    if (!instr) {
+      console.warn("Unknown key decode:", key);
+      return { op: "noop" };
+    }
+
+    return instr;
+  }
+
+  // ✅ fallback
+  console.warn("Unhandled byte format:", byte);
+  return { op: "noop" };
+}
+
+
+
+
+function encodeKey(r, c) {
+  return `${r}${c}`.padStart(2, "0");
+}
+
+
+//turns very small garbage numbers to 0 if they should be zero
+function clean(x, eps = 1e-15){
+  return Math.abs(x) < eps * Math.max(1, Math.abs(x)) ? 0 : x;
+}
+
+
+function setX(c){
+  S.X = clean(c.re);
+  IM.X = clean(c.im);
+}
+
+
+function saveLastX() {
+  lastX = S.X;
+  lastIMX = IM.X;
+}
+
+
+function hpRand() {
+  rngSeed = (9821 * rngSeed + 0.211327) % 1;
+  if (rngSeed < 0) rngSeed += 1; // safety
+  return rngSeed;
+}
+
+
+function backspace() {
+  //  FULL CLEAR for Error messages
+  if (entering && inputBuffer.startsWith("Error")) {
+    S.X = 0;
+    inputBuffer = "";
+    entering = false;
+    justCalculated = false;
+    liftOnNextDigit = false;   //  ADD THIS
+    return;
+  }
+  if (entering) {
+    inputBuffer = inputBuffer.slice(0, -1);
+    if (inputBuffer === "" || inputBuffer === "-") {
+      S.X = 0;
+      inputBuffer = "";
+      entering = false;
+    } else {
+      S.X = parseFloat(inputBuffer);
+    }
+    liftOnNextDigit = false;   //  ADD THIS
+    return;
+  }
+  //  If NOT typing → behave like CLX
+  S.X = 0;
+  inputBuffer = "";
+  entering = false;
+  justCalculated = false;
+  liftOnNextDigit = false;   //  ADD THIS
+}
+
+function digit(d) {
+  if (
+  pendingCommand &&
+  (
+    pendingCommand.startsWith("STO") ||
+    pendingCommand.startsWith("RCL") ||
+    pendingCommand === "XCHG" ||
+    pendingCommand === "SF" ||
+    pendingCommand === "CF" ||
+    pendingCommand === "TEST" ||
+    pendingCommand === "FS" ||
+    pendingCommand === "LBL"
+  )
+)
+{
+  
+let regIndex = d;
+  
+// ✅ LBL numeric labels (0–9)
+if (pendingCommand === "LBL") {
+  labels[d] = pc;
+  pendingCommand = null;
+  prefixDisplay = "";
+  entering = false;
+  inputBuffer = "";
+  return;
+}
+
+
+if (pendingGotoLine) {
+  gotoBuffer += d.toString();
+  // Only allow 3 digits max
+  if (gotoBuffer.length === 3) {
+    let n = parseInt(gotoBuffer, 10);
+    // clamp to your range
+    if (n < 0) n = 0;
+    if (n > progSize-1) n = progSize - 1;
+    // ✅ APPLY depending on mode
+    if (programMode) {
+      pc = n;
+    } else {
+      execPC = n;
+    }
+    // cleanup
+    pendingGotoLine = false;
+    gotoBuffer = "";
+    prefixDisplay = "";
+    updateDisplay();
+  }
+  return;
+}
+
+
+
+
+// ✅ 1. PREFIX HANDLING FIRST (TEST must be first)
+if (pendingCommand === "TEST") {
+
+  console.log("TEST prefix detected");  // <-- add this for proof
+
+  if (programMode) {
+    addProgramLine({
+      bytes: ["43", "30", String(i.v)]
+    });
+  } else {
+    runTest(i.v);
+  }
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  return;
+}
+
+// ✅ 2. THEN normal program recording
+if (programMode) {
+
+  console.log("NORMAL DIGIT recording");  // <-- you will see this now
+
+  addProgramLine({
+    bytes: ["43", String(i.v)]
+  });
+
+  return;
+}
+
+
+
+
+if (pendingCommand === "SF") {
+  if (regIndex >= 0 && regIndex <= 9) {
+    F[regIndex] = true;
+    console.log("Flags:", F);
+    prefixDisplay = "";
+    updateDisplay();
+  }
+  pendingCommand = null;
+entering = false;
+inputBuffer = "";
+  return;
+}
+
+else if (pendingCommand === "FS") {
+    DoIfTrue = !!F[d];
+    console.log(
+        "FS TEST",
+        "flag=", d,
+        "DoIfTrue=", DoIfTrue
+    );
+    pendingCommand = null;
+    entering = false;
+    inputBuffer = "";
+    prefixDisplay = "";
+    return;
+}
+
+else if (pendingCommand === "CF") {
+  if (regIndex >= 0 && regIndex <= 9) {
+    if(regIndex === 8){
+      IM = { X:0, Y:0, Z:0, T:0 };
+      IMx = 0;
+    }
+    F[regIndex] = false;
+    console.log("Flags:", F);
+    prefixDisplay = "";
+    updateDisplay();
+  }
+  pendingCommand = null;
+entering = false;
+inputBuffer = "";
+  return;
+}
+
+
+  if (registerDecimal) {
+    regIndex = 10 + d;
+  }
+ let regVal = R[regIndex];
+if (pendingCommand === "STO") {
+  R[regIndex] = S.X;
+}
+else if (pendingCommand === "STO+") {
+  R[regIndex] = R[regIndex] + S.X;
+}
+else if (pendingCommand === "STO-") {
+  R[regIndex] = R[regIndex] - S.X;
+}
+else if (pendingCommand === "STO*") {
+  R[regIndex] = R[regIndex] * S.X;
+}
+else if (pendingCommand === "STO/") {
+  R[regIndex] = R[regIndex] / S.X;
+}
+else if (pendingCommand === "RCL") {
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+  //  push current X
+  push(S.X);
+  //  load recalled value
+  S.X = regVal;
+  //  THIS FIXES YOUR "+ needs to be pressed twice" bug
+  liftOnNextDigit = true;
+}
+
+else if (pendingCommand === "RCL+") {
+  S.X = S.X + regVal;
+}
+else if (pendingCommand === "RCL-") {
+  S.X = S.X - regVal;
+}
+else if (pendingCommand === "RCL*") {
+  S.X = S.X * regVal;
+}
+else if (pendingCommand === "RCL/") {
+  S.X = S.X / regVal;
+}
+else if (pendingCommand === "XCHG") {
+  let temp = regVal;
+  R[regIndex] = S.X;
+  S.X = temp;
+}
+  liftOnNextDigit = true;
+  pendingCommand = null;
+  registerDecimal = false;
+  prefixDisplay = "";
+  entering = false;
+  return;
+}
+if (liftOnNextDigit) {
+    push(S.X);
+    liftOnNextDigit = false;
+}
+if (!entering) {
+      if (F[8]) {
+        IM.X = 0;
+    }
+  if (!continueEntry) {
+    inputBuffer = "";
+  }
+  entering = true;
+}
+
+continueEntry = false;
+  inputBuffer += d.toString();
+  S.X = parseFloat(inputBuffer);
+}
+
+function gamma(z) {
+  const g = 7;
+  const p = [
+    0.99999999999980993,
+    676.5203681218851,
+   -1259.1392167224028,
+    771.32342877765313,
+   -176.61502916214059,
+    12.507343278686905,
+   -0.13857109526572012,
+    9.9843695780195716e-6,
+    1.5056327351493116e-7
+  ];
+  if (z < 0.5) {
+    return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
+  }
+  z -= 1;
+  let x = p[0];
+  for (let i = 1; i < g + 2; i++) {
+    x += p[i] / (z + i);
+  }
+  const t = z + g + 0.5;
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+}
+
+function dot() {
+
+  if (liftOnNextDigit) {
+    push(S.X);
+    liftOnNextDigit = false;
+  }
+
+  if (!entering) {
+    if (F[8]) {
+      IM.X = 0;
+    }
+    inputBuffer = "0";
+    entering = true;
+  }
+
+  if (!inputBuffer.includes(".")) {
+    inputBuffer += ".";
+  }
+
+  S.X = parseFloat(inputBuffer) || 0;
+}
+
+function toRad(x) {
+  if (angleMode === "DEG") return x * Math.PI / 180;
+  if (angleMode === "GRAD") return x * Math.PI / 200;
+  return x; // RAD
+}
+
+function fromRad(x) {
+  if (angleMode === "DEG") return x * 180 / Math.PI;
+  if (angleMode === "GRAD") return x * 200 / Math.PI;
+  return x; // RAD
+}
+
+/* =========================
+   SOLVE / INTEGRATE
+========================= */
+function executeSolve(label) {
+  rebuildLabels();
+
+  if (!(label in labels)) {
+    displayError = "Error 4";
+    pendingCommand = null;
+    prefixDisplay = "";
+    updateDisplay();
+    return;
+  }
+
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+
+  const xAStart = S.Y;
+  const xBStart = S.X;
+
+  if (!Number.isFinite(xAStart) || !Number.isFinite(xBStart)) {
+    displayError = "Error 0";
+    pendingCommand = null;
+    prefixDisplay = "";
+    updateDisplay();
+    return;
+  }
+
+  const savedS = { ...S };
+  const savedIM = { ...IM };
+  const savedR = R.slice();
+  const savedLastX = lastX;
+  const savedLastIMX = lastIMX;
+  const savedPendingCommand = pendingCommand;
+  const savedPrefixDisplay = prefixDisplay;
+  const savedShiftF = shiftF;
+  const savedShiftG = shiftG;
+  const savedEntering = entering;
+  const savedInputBuffer = inputBuffer;
+  const savedJustCalculated = justCalculated;
+  const savedLiftOnNextDigit = liftOnNextDigit;
+  const savedContinueEntry = continueEntry;
+  const savedExecRunning = execRunning;
+  const savedExecPC = execPC;
+  const savedCallStack = callStack.slice();
+  const savedProgramJumped = programJumped;
+  const savedDoIfTrue = DoIfTrue;
+
+  function restoreTransientState() {
+    IM = { ...savedIM };
+    R = savedR.slice();
+
+    lastX = savedLastX;
+    lastIMX = savedLastIMX;
+
+    pendingCommand = savedPendingCommand;
+    prefixDisplay = savedPrefixDisplay;
+
+    shiftF = savedShiftF;
+    shiftG = savedShiftG;
+
+    entering = savedEntering;
+    inputBuffer = savedInputBuffer;
+
+    justCalculated = savedJustCalculated;
+    liftOnNextDigit = savedLiftOnNextDigit;
+    continueEntry = savedContinueEntry;
+
+    execRunning = savedExecRunning;
+    execPC = savedExecPC;
+    callStack = savedCallStack.slice();
+    programJumped = savedProgramJumped;
+    DoIfTrue = savedDoIfTrue;
+  }
+
+function evalLabelAt(x) {
+  S = {
+    X: x,
+    Y: x,
+    Z: x,
+    T: x
+  };
+
+  IM = {
+    X: 0,
+    Y: 0,
+    Z: 0,
+    T: 0
+  };
+
+  entering = false;
+  inputBuffer = "";
+
+  shiftF = false;
+  shiftG = false;
+
+  pendingCommand = null;
+  prefixDisplay = "";
+
+  continueEntry = false;
+  justCalculated = false;
+  liftOnNextDigit = true;
+
+  execRunning = false;
+  programJumped = false;
+  DoIfTrue = true;
+
+  let pcLocal = labels[label] + 1;
+  let guard = 0;
+
+  while (pcLocal <= progSize && guard < MAX_STEPS) {
+    guard++;
+
+    let line = prog[pcLocal];
+
+    if (!line || !line.bytes) {
+      pcLocal++;
+      continue;
+    }
+
+    let bytes = line.bytes;
+
+    if (
+      bytes.length === 2 &&
+      bytes[0] === "43" &&
+      bytes[1] === "32"
+    ) {
+      return S.X;
+    }
+
+    if (
+      bytes.length >= 2 &&
+      bytes[0] === "42" &&
+      bytes[1] === "21"
+    ) {
+      return S.X;
+    }
+
+    for (let byte of bytes) {
+      if (typeof byte !== "string" || byte.length !== 2) {
+        continue;
+      }
+
+      let r = Number(byte[0]);
+      let c = Number(byte[1]);
+
+      pressKey(r, c);
+
+      if (displayError) {
+        return NaN;
+      }
+    }
+
+    pcLocal += (DoIfTrue === false ? 2 : 1);
+    DoIfTrue = true;
+  }
+
+  if (guard >= MAX_STEPS) {
+    displayError = "Error 5";
+    return NaN;
+  }
+
+  return S.X;
+}
+
+  function solveTolerance(x) {
+    return Math.max(1e-12, Math.abs(x) * 1e-10);
+  }
+
+  function sameSign(a, b) {
+    return (
+      Number.isFinite(a) &&
+      Number.isFinite(b) &&
+      a !== 0 &&
+      b !== 0 &&
+      ((a > 0 && b > 0) || (a < 0 && b < 0))
+    );
+  }
+
+  function oppositeSign(a, b) {
+    return (
+      Number.isFinite(a) &&
+      Number.isFinite(b) &&
+      ((a < 0 && b > 0) || (a > 0 && b < 0))
+    );
+  }
+
+  function chooseBestSample(samples) {
+    let best = samples[0];
+
+    for (let i = 1; i < samples.length; i++) {
+      if (Math.abs(samples[i].fx) < Math.abs(best.fx)) {
+        best = samples[i];
+      }
+    }
+
+    return best;
+  }
+
+  function chooseOtherSample(samples, best) {
+    let other = null;
+
+    for (let i = 0; i < samples.length; i++) {
+      if (samples[i] === best) {
+        continue;
+      }
+
+      if (!other) {
+        other = samples[i];
+      } else {
+        if (Math.abs(samples[i].x - best.x) < Math.abs(other.x - best.x)) {
+          other = samples[i];
+        }
+      }
+    }
+
+    return other || best;
+  }
+
+  let a = xAStart;
+  let b = xBStart;
+
+  let fa = evalLabelAt(a);
+  let fb = evalLabelAt(b);
+
+  if (!Number.isFinite(fa) || !Number.isFinite(fb)) {
+    restoreTransientState();
+
+    displayError = displayError || "Error 0";
+    pendingCommand = null;
+    prefixDisplay = "";
+
+    updateDisplay();
+    return;
+  }
+
+  let samples = [
+    { x: a, fx: fa },
+    { x: b, fx: fb }
+  ];
+
+  if (fa === 0) {
+    restoreTransientState();
+
+    S.X = a;
+    S.Y = b;
+    S.Z = fa;
+
+    pendingCommand = null;
+    prefixDisplay = "";
+
+    shiftF = false;
+    shiftG = false;
+
+    entering = false;
+    inputBuffer = "";
+
+    justCalculated = true;
+    liftOnNextDigit = true;
+
+    updateDisplay();
+    return;
+  }
+
+  if (fb === 0) {
+    restoreTransientState();
+
+    S.X = b;
+    S.Y = a;
+    S.Z = fb;
+
+    pendingCommand = null;
+    prefixDisplay = "";
+
+    shiftF = false;
+    shiftG = false;
+
+    entering = false;
+    inputBuffer = "";
+
+    justCalculated = true;
+    liftOnNextDigit = true;
+
+    updateDisplay();
+    return;
+  }
+
+  let bracketed = oppositeSign(fa, fb);
+
+  let best = chooseBestSample(samples);
+  let other = chooseOtherSample(samples, best);
+
+  let root = best.x;
+  let fRoot = best.fx;
+  let converged = false;
+
+  let failedParabolicSteps = 0;
+
+  for (let iter = 0; iter < 100; iter++) {
+    let c;
+
+    if (fb !== fa) {
+      c = b - fb * (b - a) / (fb - fa);
+    } else {
+      c = NaN;
+    }
+
+    if (bracketed) {
+      let lo = Math.min(a, b);
+      let hi = Math.max(a, b);
+
+      if (!Number.isFinite(c) || c <= lo || c >= hi) {
+        c = (a + b) / 2;
+      }
+    } else {
+      if (!Number.isFinite(c)) {
+        let step = b - a;
+
+        if (step === 0) {
+          step = (b === 0) ? 1 : Math.abs(b) * 0.1;
+        }
+
+        c = b + step;
+      } else {
+        let maxStep = 100 * Math.max(Math.abs(b - a), solveTolerance(b));
+
+        if (Math.abs(c - b) > maxStep) {
+          c = b + Math.sign(c - b) * maxStep;
+        }
+      }
+    }
+
+    let fc = evalLabelAt(c);
+
+    if (!Number.isFinite(fc)) {
+      break;
+    }
+
+    let cSample = { x: c, fx: fc };
+    samples.push(cSample);
+
+    if (samples.length > 8) {
+      samples.shift();
+    }
+
+    best = chooseBestSample(samples);
+    other = chooseOtherSample(samples, best);
+
+    if (Math.abs(fc) < Math.abs(fRoot)) {
+      root = c;
+      fRoot = fc;
+    }
+
+    if (
+      fc === 0 ||
+      Math.abs(fc) < 1e-12 ||
+      Math.abs(c - b) <= solveTolerance(c)
+    ) {
+      converged = true;
+      root = c;
+      fRoot = fc;
+      other = { x: b, fx: fb };
+      break;
+    }
+
+    if (oppositeSign(fa, fc)) {
+      b = c;
+      fb = fc;
+      bracketed = true;
+      failedParabolicSteps = 0;
+      continue;
+    }
+
+    if (oppositeSign(fb, fc)) {
+      a = b;
+      fa = fb;
+      b = c;
+      fb = fc;
+      bracketed = true;
+      failedParabolicSteps = 0;
+      continue;
+    }
+
+    if (!bracketed && Math.abs(fc) >= Math.abs(fb)) {
+      if (samples.length >= 3) {
+        let s0 = samples[samples.length - 3];
+        let s1 = samples[samples.length - 2];
+        let s2 = samples[samples.length - 1];
+
+        let x0 = s0.x;
+        let x1 = s1.x;
+        let x2 = s2.x;
+
+        let y0 = Math.abs(s0.fx);
+        let y1 = Math.abs(s1.fx);
+        let y2 = Math.abs(s2.fx);
+
+        let denom =
+          (x0 - x1) * (x0 - x2) * (x1 - x2);
+
+        if (denom !== 0) {
+          let A =
+            (x2 * (y1 - y0) +
+             x1 * (y0 - y2) +
+             x0 * (y2 - y1)) / denom;
+
+          let B =
+            (x2 * x2 * (y0 - y1) +
+             x1 * x1 * (y2 - y0) +
+             x0 * x0 * (y1 - y2)) / denom;
+
+          if (A !== 0) {
+            let d = -B / (2 * A);
+
+            if (Number.isFinite(d) && d !== b) {
+              let fd = evalLabelAt(d);
+
+              if (Number.isFinite(fd)) {
+                samples.push({ x: d, fx: fd });
+
+                if (samples.length > 8) {
+                  samples.shift();
+                }
+
+                if (Math.abs(fd) < Math.abs(best.fx)) {
+                  a = b;
+                  fa = fb;
+                  b = d;
+                  fb = fd;
+
+                  best = chooseBestSample(samples);
+                  other = chooseOtherSample(samples, best);
+
+                  failedParabolicSteps = 0;
+                  continue;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      failedParabolicSteps++;
+
+      if (failedParabolicSteps >= 3) {
+        break;
+      }
+    } else {
+      failedParabolicSteps = 0;
+    }
+
+    a = b;
+    fa = fb;
+
+    b = c;
+    fb = fc;
+  }
+
+  best = chooseBestSample(samples);
+  other = chooseOtherSample(samples, best);
+
+  restoreTransientState();
+
+  pendingCommand = null;
+  prefixDisplay = "";
+
+  shiftF = false;
+  shiftG = false;
+
+  entering = false;
+  inputBuffer = "";
+
+  if (converged) {
+    S.X = root;
+    S.Y = other.x;
+    S.Z = fRoot;
+
+    justCalculated = true;
+    liftOnNextDigit = true;
+
+    updateDisplay();
+    return;
+  }
+
+  S.X = best.x;
+  S.Y = other.x;
+  S.Z = best.fx;
+
+  displayError = "Error 8";
+
+  justCalculated = true;
+  liftOnNextDigit = true;
+
+  updateDisplay();
+}
+
+/*
+  HP-15C-style numerical integration, first implementation.
+
+  Usage:
+    Y = lower limit a
+    X = upper limit b
+    f ∫ label
+
+  Result:
+    X = integral approximation
+    Y = uncertainty estimate
+    Z = original upper limit b
+    T = original lower limit a
+*/
+function executeIntegrate(label) {
+  rebuildLabels();
+
+  if (!(label in labels)) {
+    displayError = "Error 4";
+    pendingCommand = null;
+    prefixDisplay = "";
+    updateDisplay();
+    return;
+  }
+
+  if (entering) {
+    S.X = parseFloat(inputBuffer || "0");
+    entering = false;
+    inputBuffer = "";
+  }
+
+  const a = S.Y;
+  const b = S.X;
+
+  if (!Number.isFinite(a) || !Number.isFinite(b)) {
+    displayError = "Error 0";
+    pendingCommand = null;
+    prefixDisplay = "";
+    updateDisplay();
+    return;
+  }
+
+  if (a === b) {
+    S.T = a;
+    S.Z = b;
+    S.Y = 0;
+    S.X = 0;
+    pendingCommand = null;
+    prefixDisplay = "";
+    shiftF = false;
+    shiftG = false;
+    justCalculated = true;
+    liftOnNextDigit = true;
+    updateDisplay();
+    return;
+  }
+
+  const savedS = { ...S };
+  const savedIM = { ...IM };
+  const savedR = R.slice();
+  const savedLastX = lastX;
+  const savedLastIMX = lastIMX;
+  const savedPendingCommand = pendingCommand;
+  const savedPrefixDisplay = prefixDisplay;
+  const savedShiftF = shiftF;
+  const savedShiftG = shiftG;
+  const savedEntering = entering;
+  const savedInputBuffer = inputBuffer;
+  const savedJustCalculated = justCalculated;
+  const savedLiftOnNextDigit = liftOnNextDigit;
+  const savedContinueEntry = continueEntry;
+  const savedExecRunning = execRunning;
+  const savedExecPC = execPC;
+  const savedCallStack = callStack.slice();
+  const savedProgramJumped = programJumped;
+  const savedDoIfTrue = DoIfTrue;
+
+  function restoreTransientState() {
+    IM = { ...savedIM };
+    R = savedR.slice();
+    lastX = savedLastX;
+    lastIMX = savedLastIMX;
+    pendingCommand = savedPendingCommand;
+    prefixDisplay = savedPrefixDisplay;
+    shiftF = savedShiftF;
+    shiftG = savedShiftG;
+    entering = savedEntering;
+    inputBuffer = savedInputBuffer;
+    justCalculated = savedJustCalculated;
+    liftOnNextDigit = savedLiftOnNextDigit;
+    continueEntry = savedContinueEntry;
+    execRunning = savedExecRunning;
+    execPC = savedExecPC;
+    callStack = savedCallStack.slice();
+    programJumped = savedProgramJumped;
+    DoIfTrue = savedDoIfTrue;
+  }
+
+  function evalLabelAt(x) {
+    // HP-15C INTEGRATE behavior:
+    // Each sampled x must be placed into the entire real stack.
+    // This allows the integration subroutine to reuse x with
+    // ENTER, R↓, R↑, and x↔y, just like the real HP-15C.
+    S = {
+      X: x,
+      Y: x,
+      Z: x,
+      T: x
+    };
+
+    // The HP-15C numeric integration does not use the imaginary stack here.
+    IM = {
+      X: 0,
+      Y: 0,
+      Z: 0,
+      T: 0
+    };
+
+    entering = false;
+    inputBuffer = "";
+    shiftF = false;
+    shiftG = false;
+    pendingCommand = null;
+    prefixDisplay = "";
+    continueEntry = false;
+    justCalculated = false;
+    liftOnNextDigit = true;
+    DoIfTrue = true;
+
+    let pcLocal = labels[label] + 1;
+    let guard = 0;
+
+    while (pcLocal <= progSize && guard < MAX_STEPS) {
+      guard++;
+
+      let line = prog[pcLocal];
+
+      if (!line || !line.bytes) {
+        pcLocal++;
+        continue;
+      }
+
+      let bytes = line.bytes;
+
+      // Stop at RTN: g RTN is stored as 43,32 in your encoder.
+      if (bytes.length === 2 && bytes[0] === "43" && bytes[1] === "32") {
+        return S.X;
+      }
+
+      // If another LBL is encountered before RTN, stop.
+      // This keeps one labeled function from falling into the next.
+      if (
+        bytes.length >= 2 &&
+        bytes[0] === "42" &&
+        bytes[1] === "21"
+      ) {
+        return S.X;
+      }
+
+      // Execute the recorded key sequence exactly like normal program execution.
+      for (let byte of bytes) {
+        if (typeof byte !== "string" || byte.length !== 2) continue;
+
+        let r = Number(byte[0]);
+        let c = Number(byte[1]);
+
+        pressKey(r, c);
+
+        if (displayError) {
+          return NaN;
+        }
+      }
+
+      pcLocal += (DoIfTrue === false ? 2 : 1);
+      DoIfTrue = true;
+    }
+
+    if (guard >= MAX_STEPS) {
+      displayError = "Error 5";
+      return NaN;
+    }
+
+    return S.X;
+  }
+
+  function simpson(fa, fm, fb, left, right) {
+    return (right - left) * (fa + 4 * fm + fb) / 6;
+  }
+
+  function displayDigitsForIntegration() {
+    if (displayMode === "FIX" || displayMode === "SCI" || displayMode === "ENG") {
+      return Math.max(0, Math.min(9, fixDigits));
+    }
+
+    // NORMAL display uses your 10 significant digit formatter.
+    return 9;
+  }
+
+  const digits = displayDigitsForIntegration();
+  const relTol = Math.pow(10, -digits);
+  const absTol = Math.pow(10, -(digits + 2));
+
+  function adaptiveSimpson(left, right, fa, fm, fb, whole, tol, depth) {
+    const mid = (left + right) / 2;
+    const lm = (left + mid) / 2;
+    const rm = (mid + right) / 2;
+
+    const flm = evalLabelAt(lm);
+    const frm = evalLabelAt(rm);
+
+    if (
+      !Number.isFinite(fa) ||
+      !Number.isFinite(fm) ||
+      !Number.isFinite(fb) ||
+      !Number.isFinite(flm) ||
+      !Number.isFinite(frm)
+    ) {
+      return { value: NaN, uncertainty: NaN };
+    }
+
+    const leftApprox = simpson(fa, flm, fm, left, mid);
+    const rightApprox = simpson(fm, frm, fb, mid, right);
+    const refined = leftApprox + rightApprox;
+    const diff = refined - whole;
+
+    if (depth <= 0 || Math.abs(diff) <= 15 * tol) {
+      return {
+        value: refined + diff / 15,
+        uncertainty: Math.abs(diff / 15)
+      };
+    }
+
+    const leftResult = adaptiveSimpson(
+      left, mid,
+      fa, flm, fm,
+      leftApprox,
+      tol / 2,
+      depth - 1
+    );
+
+    const rightResult = adaptiveSimpson(
+      mid, right,
+      fm, frm, fb,
+      rightApprox,
+      tol / 2,
+      depth - 1
+    );
+
+    return {
+      value: leftResult.value + rightResult.value,
+      uncertainty: leftResult.uncertainty + rightResult.uncertainty
+    };
+  }
+
+  const fa = evalLabelAt(a);
+  const fb = evalLabelAt(b);
+  const mid = (a + b) / 2;
+  const fm = evalLabelAt(mid);
+  const first = simpson(fa, fm, fb, a, b);
+
+  const tol = Math.max(absTol, Math.abs(first) * relTol);
+  const result = adaptiveSimpson(a, b, fa, fm, fb, first, tol, 20);
+
+  restoreTransientState();
+
+  if (!Number.isFinite(result.value) || !Number.isFinite(result.uncertainty)) {
+    displayError = displayError || "Error 0";
+    pendingCommand = null;
+    prefixDisplay = "";
+    updateDisplay();
+    return;
+  }
+
+  // HP-15C post-integration stack layout:
+  // T = lower limit
+  // Z = upper limit
+  // Y = uncertainty
+  // X = approximation
+  S.T = a;
+  S.Z = b;
+  S.Y = result.uncertainty;
+  S.X = result.value;
+
+  IM.T = 0;
+  IM.Z = 0;
+  IM.Y = 0;
+  IM.X = 0;
+
+  pendingCommand = null;
+  prefixDisplay = "";
+  shiftF = false;
+  shiftG = false;
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+
+  updateDisplay();
+}
+
+
+/* =========================
+   PROGRAM engine
+========================= */
+
+function programExecute() {
+  entering = false;
+  inputBuffer = "";
+  justCalculated = true;
+  liftOnNextDigit = true;
+  programMode = false;
+  DoIfTrue = true;
+  let startIndex = -1;
+
+  // ✅ 1. Find the LBL start: 42,21,programStart
+  for (let i = 0; i < progSize; i++) {
+    let line = prog[i];
+    if (!line || !line.bytes) continue;
+    let b = line.bytes;
+    if (
+      b.length === 3 &&
+      b[0] === "42" &&   // f
+      b[1] === "21" &&   // LBL
+      b[2] === String(programStart)
+    ) {
+      startIndex = i + 1; // ✅ start AFTER label
+      break;
+    }
+  }
+
+if (startIndex === -1) {
+    console.warn("Program start not found");
+    S.X = "Error 4"
+    return;
+}
+
+callStack = [];
+callStack.push(startIndex);
+execPC = startIndex;
+execRunning = true;
+console.log("CALLING STEP");
+  step();
+}
+
+  function step() {
+    
+console.log(
+    "STEP ENTRY",
+    "execPC=", execPC,
+    "running=", execRunning,
+    "time=", Date.now()
+);
+
+    console.log(
+        "STEP",
+        "execPC=", execPC,
+        "progSize=", progSize
+    );
+
+if (!execRunning) {
+  finishProgram();   // ✅ handle RTN stop
+  return;
+}
+
+console.log(
+  "STEP",
+  "execPC=", execPC,
+  "progSize=", progSize
+);
+
+if (execPC > progSize) {
+  console.log("Program END");   // ✅ will now fire
+  finishProgram();               // ✅ cleanup runs
+  return;
+}
+
+    let line = prog[execPC];
+    if (!line || !line.bytes) {
+      execPC ++;
+      setTimeout(step, 10);
+      return;
+    }
+
+
+console.log(
+    "LINE",
+    execPC,
+    JSON.stringify(line.bytes)
+);
+
+    let bytes = line.bytes;
+
+    // ✅ 3. Execute each byte as a key press
+    for (let byte of bytes) {
+      // skip weird custom tokens like "dot5"
+      if (typeof byte !== "string" || byte.length !== 2) continue;
+      let r = Number(byte[0]);
+      let c = Number(byte[1]);
+      // ✅ simulate *real key press*
+      pressKey(r, c);
+    }
+
+
+if (!programJumped) {
+    execPC += (DoIfTrue === false ? 2 : 1);
+}
+
+programJumped = false;
+
+DoIfTrue = true;
+if (execPauseUntil > Date.now()) {
+    setTimeout(step, execPauseUntil - Date.now());
+    return;
+}
+    setTimeout(step, 30);
+  }
+
+function finishProgram() {
+  execRunning = false;
+callStack = [];
+  entering = false;
+  inputBuffer = "";
+
+  liftOnNextDigit = true;
+  justCalculated = true;
+  continueEntry = false;
+
+  console.log("PROGRAM FINISHED", {
+    entering, DoIfTrue,
+    liftOnNextDigit
+  });
+}
+
+
+/* =========================
+   DISPLAY
+========================= */
+function fmt(v){
+if (isMatrix(v)) {
+  let m = M[v.name];
+  if (!m || !m.rows || !m.cols) {
+    return `${v.name} 0,0`;
+  }
+
+  return `${v.name} ${m.rows},${m.cols}`;
+}
+
+  if (!Number.isFinite(v)) return "ERR";
+  //  SCI
+  if (displayMode === "SCI") {
+    return v.toExponential(fixDigits);
+  }
+  //  FIX
+  if (displayMode === "FIX") {
+    return v.toFixed(fixDigits);
+  }
+  //  ENG
+  if (displayMode === "ENG") {
+    if (v === 0) {
+      return (0).toFixed(fixDigits) + "e0";
+    }
+    let sign = v < 0 ? "-" : "";
+    v = Math.abs(v);
+    let exp = Math.floor(Math.log10(v) / 3) * 3;
+    let scaled = v / Math.pow(10, exp);
+    if (scaled >= 1000) {
+      scaled /= 1000;
+      exp += 3;
+    }
+    return sign + scaled.toFixed(fixDigits) + "e" + exp;
+  }
+
+  //  NORMAL
+  let out = Number(v).toPrecision(10);
+  out = out.replace(/(\.\d*?[1-9])0+$/, "$1");
+  out = out.replace(/\.0+$/, "");
+  return out;
+}
+
+function updateDisplay(){
+  updateFlagsDisplay();
+  if (!powerOn) {
+    document.getElementById("dispX").innerText = "";
+    document.getElementById("dispY").innerText = "";
+    document.getElementById("dispZ").innerText = "";
+    document.getElementById("dispT").innerText = "";
+    return;
+  }
+
+if (displayError) {
+  document.getElementById("dispX").innerText = displayError;
+  document.getElementById("dispY").innerText = "";
+  document.getElementById("dispZ").innerText = "";
+  document.getElementById("dispT").innerText = "";
+  return;
+}
+
+
+function formatForDisplay(value, isX = false) {
+
+if (isX && matrixStorePreview) {
+  return `${matrixStorePreview.name} ${matrixStorePreview.row},${matrixStorePreview.col}`;
+}
+
+  //  PREFIX HOLD MODE
+  if (prefixHold && isX) {
+    if (!Number.isFinite(value)) return "ERR";
+
+    // Convert to full precision string
+    let s = Number(value).toPrecision(12);
+
+    // Remove decimal point
+    s = s.replace(".", "");
+
+    // Remove leading zeros if needed (optional)
+    return s;
+  }
+
+  //  Normal entry behavior
+  if (isX && entering && inputBuffer !== "") {
+    return inputBuffer;
+  }
+  return fmt(value);
+}
+
+//  Choose which stack to DISPLAY
+const activeStack = viewIM ? IM : S;
+document.getElementById("dispX").innerText =
+  formatForDisplay(activeStack.X, true);
+document.getElementById("dispY").innerText =
+  formatForDisplay(activeStack.Y);
+document.getElementById("dispZ").innerText =
+  formatForDisplay(activeStack.Z);
+document.getElementById("dispT").innerText =
+  formatForDisplay(activeStack.T);
+
+let modeText = angleMode;
+
+if (displayMode === "FIX") {
+    modeText = `FIX${fixDigits} ${angleMode}`;
+}
+else if (displayMode === "SCI") {
+    modeText = `SCI${fixDigits} ${angleMode}`;
+}
+else if (displayMode === "ENG") {
+    modeText = `ENG${fixDigits} ${angleMode}`;
+}
+
+
+document.getElementById("statusFlags").innerText =
+  modeText +
+  (prefixDisplay ? " " + prefixDisplay : "") +
+  (iHypMode ? " iHYP " : "") +
+  (hypMode ? " HYP " : "") +
+  (shiftF ? " f " : "") +
+  (shiftG ? " g " : "");
+  if (viewIM) {
+  document.getElementById("statusFlags").innerText += "  IM";
+}
+
+let modeLabel = "";
+
+if (USER) modeLabel += "USER ";
+if (F[8]) modeLabel += "C";
+
+// ✅ Program mode (PRGM)
+if (programMode) {
+  let displayLine = pc;
+  let lineText = formatProgramLine(displayLine);
+  document.getElementById("dispX").innerText = lineText;
+  document.getElementById("dispY").innerText = "";
+  document.getElementById("dispZ").innerText = "";
+  document.getElementById("dispT").innerText = "";
+  document.getElementById("statusMode").innerHTML = "PRGM";
+    return;
+}
+document.getElementById("statusMode").innerText = modeLabel;
+renderRegisters();
+}
+function renderRegisters() {
+  const PER_ROW = 3;
+
+  function row(items) {
+    return `<div style="margin:2px 0;">${items.join(" &nbsp;&nbsp;&nbsp;&nbsp; ")}</div>`;
+  }
+
+  function f(label, index) {
+    return `${label}: ${fmt(R[index])}`;
+  }
+  let lines = [];
+  // ✅ R66 (I register)
+  lines.push(row([
+    f("R66, I", 66)
+  ]));
+  // ✅ R0–R9  (numeric labels)
+  let rBlock = [];
+  for (let i = 0; i <= 9; i++) {
+    rBlock.push(f(`R${i}, ${i}`, i));
+  }
+  for (let i = 0; i < rBlock.length; i += PER_ROW) {
+    lines.push(row(rBlock.slice(i, i + PER_ROW)));
+  }
+  // ✅ R10–R19  (.0–.9)
+  let rdBlock = [];
+  for (let i = 10; i <= 19; i++) {
+    rdBlock.push(f(`R${i}, .${i - 10}`, i));
+  }
+  for (let i = 0; i < rdBlock.length; i += PER_ROW) {
+    lines.push(row(rdBlock.slice(i, i + PER_ROW)));
+  }
+  // ✅ R20–R24  (A–E)
+  let names = ["A","B","C","D","E"];
+  let raBlock = [];
+  for (let i = 0; i < 5; i++) {
+    raBlock.push(f(`R${20 + i}, ${names[i]}`, 20 + i));
+  }
+  for (let i = 0; i < raBlock.length; i += PER_ROW) {
+    lines.push(row(raBlock.slice(i, i + PER_ROW)));
+  }
+  // ✅ R25–R65 (plain numeric)
+  let remaining = [];
+  for (let i = 25; i <= 65; i++) {
+    remaining.push(f(`R${i}`, i));
+  }
+  for (let i = 0; i < remaining.length; i += PER_ROW) {
+    lines.push(row(remaining.slice(i, i + PER_ROW)));
+  }
+  // ✅ Render (centered)
+  document.getElementById("registerPanel").innerHTML =
+    `<div style="text-align:center;">${lines.join("")}</div>`;
+}
+
+
+/* =========================
+   Save State
+========================= */
+function getCalculatorState() {
+    return {
+        S,
+        IM,
+        lastX,
+        lastIMX,
+        F,
+        R,
+        M,
+        USER,
+        angleMode,
+        displayMode,
+        fixDigits,
+        rngSeed,
+        prog,
+        progSize,
+        labels,
+        pc,
+        execPC,
+        callStack
+    };
+}
+
+function restoreCalculatorState(state) {
+    Object.assign(S, state.S);
+    Object.assign(IM, state.IM);
+    lastX = state.lastX;
+    lastIMX = state.lastIMX;
+    F = state.F;
+    R = state.R;
+    M = state.M;
+    USER = state.USER;
+    angleMode  = state.angleMode;
+    displayMode = state.displayMode;
+    fixDigits   = state.fixDigits;
+    rngSeed = state.rngSeed;
+    prog = state.prog;
+    progSize = state.progSize;
+    labels = state.labels;
+    pc = state.pc;
+    execPC = state.execPC;
+    callStack = state.callStack || [];
+    updateDisplay();
+}
+
+function saveToBrowser() {
+    localStorage.setItem(
+        "HP15C_STATE",
+        JSON.stringify(getCalculatorState())
+    );
+}
+
+function loadFromBrowser() {
+    let data =
+        localStorage.getItem("HP15C_STATE");
+    if (!data) return;
+    restoreCalculatorState(
+        JSON.parse(data)
+    );
+}
+
+function exportStateFile() {
+    const blob =
+        new Blob(
+            [
+                JSON.stringify(
+                    getCalculatorState(),
+                    null,
+                    2
+                )
+            ],
+            {
+                type: "application/json"
+            }
+        );
+    const a =
+        document.createElement("a");
+    a.href =
+        URL.createObjectURL(blob);
+    a.download =
+        "hp15c_state.json";
+    a.click();
+}
+
+function importStateFile(file) {
+    const reader =
+        new FileReader();
+    reader.onload = function(e) {
+        const state =
+            JSON.parse(e.target.result);
+        restoreCalculatorState(state);
+        updateDisplay();
+    };
+    reader.readAsText(file);
+}
+
+
+document
+.getElementById("loadStateFile")
+.addEventListener(
+    "change",
+    function(e) {
+        if (e.target.files.length) {
+            importStateFile(
+                e.target.files[0]
+            );
+        }
+    }
+);
+
+document
+.getElementById("loadStateFile")
+.click();
+
+
+/* =========================
+   KEYBOARD INPUT
+========================= */
+
+document.addEventListener("keydown", function(e){
+  // Prevent browser interfering
+  e.preventDefault();
+  const key = e.key;
+  const keyMapKeyboard = {
+    //  Digits
+    "7": [1,7], "8": [1,8], "9": [1,9],
+    "4": [2,7], "5": [2,8], "6": [2,9],
+    "1": [3,7], "2": [3,8], "3": [3,9],
+    "0": [4,7],
+    //  Operators
+    "/": [1,0],
+    "*": [2,0],
+    "-": [3,0],
+    "+": [4,0],
+    //  Enter
+    "Enter": [4,6],
+    //  Decimal
+    ".": [4,8],
+    //  Backspace
+    "Backspace": [3,5],
+    //  Shifts
+    "f": [4,2],
+    "g": [4,3],
+    "F": [4,2],
+    "G": [4,3],
+    "i": [2,4],
+    "I": [2,4],
+    "t": [2,5],
+    "T": [2,5],
+    "p": [2,6],
+    "P": [2,6],
+    "l": [4,9],
+    "L": [4,9],
+    "X": [2,1],
+    "x": [2,1],
+    "Y": [2,2],
+    "y": [2,2],
+    "Z": [2,3],
+    "z": [2,3],
+    "Q": [3,1],
+    "q": [3,1],
+    "W": [3,2],
+    "w": [3,2],
+    "U": [3,3],
+    "u": [3,3],
+    "k": [3,4],
+    "K": [3,4],
+    
+  // ✅ NEW: STO
+  "s": [4,4],
+  "S": [4,4],
+
+  // ✅ NEW: RCL
+  "r": [4,5],
+  "R": [4,5],
+
+  // ✅ NEW: MATRIX
+  "m": [1,6],
+  "M": [1,6],
+
+  // ✅ NEW: A–E (matrix labels)
+  "a": [1,1], "A": [1,1],
+  "b": [1,2], "B": [1,2],
+  "c": [1,3], "C": [1,3],
+  "d": [1,4], "D": [1,4],
+  "e": [1,5], "E": [1,5],
+  };
+  const mapping = keyMapKeyboard[key];
+  if(mapping){
+    pressKey(mapping[0], mapping[1]);
+  }
+});
+
+function saveMatrix(){
+  if (!currentMatrixName) return;
+  let m = M[currentMatrixName];
+  let grid = document.getElementById("matrixGrid");
+  let inputs = grid.querySelectorAll("input");
+  inputs.forEach(input => {
+    let idx = parseInt(input.dataset.index);
+    m.data[idx] = parseFloat(input.value) || 0;
+  });
+  closeMatrix();
+}
+
+function closeMatrix(){
+  document.getElementById("matrixEditor").style.display = "none";
+  currentMatrixName = null;
+}
+
+updateDisplay();
+
+
+/* ===========================================================================================
+   ADDITIONAL STUFF
+=========================================================================================== */
+// FLAGS FOR CALCULATOR SCREEN
+function updateFlagsDisplay() {
+  let html = "";
+
+
+  /* =========================
+     FLAGS
+  ========================= */
+  html += `<div style="margin-bottom:6px;">`;
+  for (let i = 0; i <= 9; i++) {
+    let isSet = F[i];
+    html += `
+      <span style="
+        display:inline-block;
+        margin:2px;
+        padding:4px 6px;
+        border-radius:4px;
+        background:${isSet ? "#00ff88" : "#222"};
+        border:${isSet ? "1px solid #00ff88" : "1px solid #111"};
+        color:${isSet ? "#000" : "#777"};
+        font-size:12px;
+      ">
+        F${i}
+      </span>
+    `;
+  }
+  html += `</div>`;
+
+  /* =========================
+     STACK DISPLAY
+  ========================= */
+  html += `
+    <div style="
+      display:flex;
+      justify-content:center;
+      gap:40px;
+      margin-top:12px;
+      font-family: monospace;
+      font-size:14px;
+    ">
+
+      <div style="text-align:center;">
+        <div style="color:#9dfc9d; margin-bottom:4px;">S</div>
+        <div>T: ${fmt(S.T)}</div>
+        <div>Z: ${fmt(S.Z)}</div>
+        <div>Y: ${fmt(S.Y)}</div>
+        <div>X: ${fmt(S.X)}</div>
+      </div>
+
+      <div style="text-align:center;">
+        <div style="color:#6bb7ff; margin-bottom:4px;">IM</div>
+        <div>T: ${fmt(IM.T)}</div>
+        <div>Z: ${fmt(IM.Z)}</div>
+        <div>Y: ${fmt(IM.Y)}</div>
+        <div>X: ${fmt(IM.X)}</div>
+      </div>
+
+    </div>
+  `;
+
+
+  /* =========================
+     MATRIX DISPLAY (GRID)
+  ========================= */
+
+const matricesActive = matrixEntryMode;
+html += `
+  <div style="
+    margin-top:16px;
+    font-family: monospace;
+    font-size:13px;
+    text-align:center;
+    max-height:320px;
+    overflow:auto;
+    border-top:1px solid #333;
+    padding-top:10px;
+  ">
+  <div style="
+    color:${matricesActive ? "#6bb7ff" : "#f7c94b"};
+    margin-bottom:8px;
+    font-weight:${matricesActive ? "bold" : "normal"};
+  ">
+    MATRICES${matricesActive ? " ← ACTIVE" : ""}
+  </div>
+`;
+
+  for (let name of ["A","B","C","D","E"]) {
+    let m = M[name];
+
+    //  EMPTY MATRIX
+    if (!m || m.rows === 0) {
+      html += `<div>${name}: 0×0 []</div>`;
+      continue;
+    }
+
+    //  MATRIX HEADER
+    html += `
+      <div style="margin-top:8px; color:#ccc;">
+        ${name}: ${m.rows}×${m.cols}
+      </div>
+    `;
+
+    //  GRID
+    for (let r = 0; r < m.rows; r++) {
+      let row = [];
+      for (let c = 0; c < m.cols; c++) {
+        let idx = r * m.cols + c;
+        let val = fmt(m.data[idx]);
+        //  HIGHLIGHT CURRENT ENTRY POSITION
+
+let currentIdx = getMatrixIndexFromR(m);
+if (
+  matrixEntryMode &&
+  idx === currentIdx &&
+  currentIdx >= 0
+)
+
+ {
+          val = `<span style="
+                    color:#000;
+                    background:#6bb7ff;
+                    padding:0 3px;
+                    border-radius:3px;
+                 ">${val}</span>`;
+        }
+
+        row.push(val);
+      }
+
+      html += `<div>[ ${row.join(" , ")} ]</div>`;
+    }
+  }
+
+  html += `</div>`;
+
+  /* =========================
+     FINAL RENDER
+  ========================= */
+  document.getElementById("flagPanel").innerHTML = html;
+}
+
+</script>
+</body>
+</html>

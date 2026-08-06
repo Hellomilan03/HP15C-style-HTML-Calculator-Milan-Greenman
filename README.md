@@ -3,9 +3,8 @@ This is an HP15C style calculator.  Its about 97% complete.  All of the function
 The calculator has not been tested or verified and I am not responsible for any incorrect results provided by the calculator.
 
 To Do List:
--STO and RCL to A-E memory registers R20-R24.
--Verify and/or implement matrix operations in programming mode.
--Last line of last program should auto rtn if there aren't any more program lines after.
+- Verify and/or implement matrix operations in programming mode.
+- Last line of last program should auto rtn if there aren't any more program lines after.
 
 Subtle Differences:
 - ENTER key is recorded as 46(Emulator) instead of 36(HP15C)

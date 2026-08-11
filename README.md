@@ -1,3 +1,5 @@
+https://youtube.com/playlist?list=PLdK5Dsuv__Uc&si=IHlVTmNFxQ0dnD4U
+
 # HP15C-style-HTML-Calculator-Milan-Greenman
 This is an HP15C style calculator.  Its about 97% complete.  All of the functions work mostly as the real HP15C calculator.
 The calculator has not been tested or verified and I am not responsible for any incorrect results provided by the calculator.

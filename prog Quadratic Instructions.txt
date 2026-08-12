@@ -1,5 +1,10 @@
+Download the "prog Quadratic.json" file
+With the calculator open in a web browser, click the LOAD JSON button
+Locate, select, & open the "prog Quadratic.json" file
 Enter A, B, & C into the stack.
 1. A ENTER
 2. B ENTER
 3. C
-4, f A
+4. f E
+Results:
+The first and second solution are displayed in the X and Y registers of the stack on the main display

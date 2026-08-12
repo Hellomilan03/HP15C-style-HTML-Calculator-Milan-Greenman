@@ -1,0 +1,5 @@
+Enter A, B, & C into the stack.
+1. A ENTER
+2. B ENTER
+3. C
+4, f A

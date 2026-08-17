@@ -1,0 +1,15 @@
+Download the "prog Simplify Integer Square Roots.json" file
+With the calculator open in a web browser, click the LOAD JSON button
+Locate, select, & open the "prog Simplify Integer Square Roots.json" file
+
+Note: Non Integer values probably will not solve and the display will show ERR.  If this happens, press the
+      "ON" button to turn the calculator off.  Press the "ON" button to turn the calculator
+      back on.  You can then clear the calculator and resume using the calculator.  The
+      results are pushed into the stack so they appear in the order you would read/write/say
+      the value.  I did this so that on the real HP15C calculator you will see the Coefficient
+      R-dn Radicand.  Some initial radicands will take longer to simplify than others.  It will
+      stop at some point as memory register 0(R0) approaches zero.
+
+1. With an integer in the X register of the stack press f A
+Result:  Y: Radicand
+         X: Coefficient

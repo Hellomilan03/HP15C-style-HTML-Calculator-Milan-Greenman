@@ -1,0 +1,39 @@
+Download the "prog Dec_To_Frac GCD LCM.json" file
+With the calculator open in a web browser, click the LOAD JSON button
+Locate, select, & open the "prog Dec_To_Frac GCD LCM.json" file
+
+
+
+**Decimal to Fraction Program**
+Note: Some decimals will not solve.  Press the "ON" button to turn the calculator off.
+      Press the "ON" button to turn the calculator back on.  You can then clear the calculator
+      and resume using the calculator.  The results are pushed into the stack so they appear
+      in the order you would read/write/say the value.  I did this so that on the real HP15C
+      calculator you will see the Numerator R-dn Denominator or Integer R-dn Numerator R-dn
+      Denominator.  Some fractions will take longer to solve than others.
+1. With a decimal value in the X register of the stack press f A
+Result:  Y: Denominator
+         X: Numerator
+Note: This could be an improper fraction with the numerator greater than the denominator.  Pressing R/S
+      will convert to a mixed fraction.  If the initial X register value is negative, the negative sign
+      will be appended to the denominator.
+2. Press R/S
+Result:  Z: Denominator
+         Y: Numerator
+         X: Integer
+Note: The calculator will evaluate if an improper fraction and if so, convert to a mixed fraction.  If
+      not an improper fraction, the program returns with no change to the stack.  If the initial X
+      register value is negative, the negative sign will be appended to the integer & denominator.
+      These do not cancel.  They simply mean the mixed fraction is negative.
+
+
+
+**Greatest Common Divisor**
+1. With 2 numbers loaded in X and Y of the stack, press f B
+Result:  X: GCD
+
+
+
+**Least Common Multiple**
+1. With 2 numbers loaded in X and Y of the stack, press f C
+Result:  X: LCM

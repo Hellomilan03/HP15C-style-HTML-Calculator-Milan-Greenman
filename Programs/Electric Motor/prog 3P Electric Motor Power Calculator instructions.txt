@@ -1,0 +1,67 @@
+3P Electric Motor Power Calculator
+
+This program calculates motor load variables based on a few input criteria.  If you
+have Voltage, PF and one of either HP, kVA, kW, or Amps, it will calculate the
+remaining values.
+
+I built this as a single LBL A program that uses flags 0 through 3 to remember whether
+you entered HP, kVA, kW, or amps. It first clears utilized program flags and memory
+registers. Then collects the selected input, the value of the input, pauses at 85.00
+for power factor, pauses for kV line-to-line, calculates every register, and displays
+the first result. The display will read PF, kV, HP, kVA, kW, and amps, pressing R/S
+between each result.
+
+
+Labels
+•	A, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, .0, .1, .2
+Registers
+•	R0 = PF as a decimal, (85 input stores as 0.85)
+•	R1 = kV line-to-line
+•	R2 = HP
+•	R3 = kVA
+•	R4 = watts
+•	R5 = amps
+•	R9 = temporary input-selection number
+Flags
+•	Flag 0 = HP was entered
+•	Flag 1 = kVA was entered
+•	Flag 2 = watts were entered
+•	Flag 3 = amps were entered
+
+
+Steps:
+1. f A
+2. At this first stop, select the type of value you will enter:
+   •	1 = HP
+   •	2 = kVA
+   •	3 = kW
+   •	4 = Amps
+   The displayed default is 1, so simply press R/S to select HP
+   Enter 2, 3, or 4 to select the other initial units for your calculation
+   If the value entered is not a 1-4 integer, the program restarts
+3. At this stop, enter the selected HP, kVA, kW, or Amps, then press R/S
+   •	The program stores the value into the appropriate memory register determined by flag status
+4. Enter PF%
+   •	The display defaults to 85
+   •	To accept 85%, press R/S
+   •	To use another PF, enter it as a percentage, such as 92.5, then press R/S
+   •	The program divides the entry by 100
+   •	Therefore, 85.00 becomes 0.85 in R0
+5. At this stop, enter line-to-line voltage in kV, then press R/S
+   Examples:
+   •	Enter 0.208 for 208 V
+   •	Enter 0.24 for 240 V
+   •	Enter 0.48 for 480 V
+6. Display reads PF
+7. Press R/S
+8. Display reads kV
+9. Press R/S
+10. Display reads HP
+11. Press R/S
+12. Display reads kVA
+13. Press R/S
+14. Display reads kW
+15. Press R/S
+16. Display reads Amps
+17. Pressing R/S R/S (two times) will return to program start
+

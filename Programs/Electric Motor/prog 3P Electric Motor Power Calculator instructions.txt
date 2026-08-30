@@ -19,13 +19,13 @@ Registers
 •	R1 = kV line-to-line
 •	R2 = HP
 •	R3 = kVA
-•	R4 = watts
+•	R4 = kilowatts
 •	R5 = amps
 •	R9 = temporary input-selection number
 Flags
 •	Flag 0 = HP was entered
 •	Flag 1 = kVA was entered
-•	Flag 2 = watts were entered
+•	Flag 2 = kilowatts were entered
 •	Flag 3 = amps were entered
 
 

@@ -4933,13 +4933,27 @@ if (execRunning) {
     return;
 }
 
-  if (execPC > 0) {
-      programPaused = false;
-      execRunning = true;
-      console.log("CALLING STEP");
-      step();
-      return;
-  }
+if (execPC > 0) {
+    // Finalize any number entered while the program was paused.
+    if (entering) {
+        S.X = parseFloat(inputBuffer || "0");
+        entering = false;
+        inputBuffer = "";
+    }
+
+    // The next programmed digit must begin a new number
+    // and lift the manually entered value into Y.
+    liftOnNextDigit = true;
+    justCalculated = true;
+    continueEntry = false;
+
+    programPaused = false;
+    execRunning = true;
+
+    console.log("CALLING STEP");
+    step();
+    return;
+}
 
   runProgram();
   return;

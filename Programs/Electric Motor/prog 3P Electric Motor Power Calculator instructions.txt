@@ -1,5 +1,8 @@
 3P Electric Motor Power Calculator
 
+Youtube:
+https://youtu.be/kjVP9dMzJXY
+
 This program calculates motor load variables based on a few input criteria.  If you
 have Voltage, PF and one of either HP, kVA, kW, or Amps, it will calculate the
 remaining values.

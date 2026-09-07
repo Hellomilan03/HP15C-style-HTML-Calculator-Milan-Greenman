@@ -1,1 +1,12 @@
-Instructions here...
+Annuities and compound Amounts
+
+Youtube:
+https://youtu.be/YEtH2aFWT8s?si=JrRFxFQxjyzyMZYY
+
+Labels used: A, B, C, D, E, 0, 1, 2, 3, and 4.
+Registers used: R0 (A), R1 (n), R2, (i), R3 (PV), R4 (PMT), R5 (FV),
+R6, R7, and R8.
+
+For instructions please refer to the HP15C Advanced Functions Handbook starting at the top of page 26
+and continuing down to the top of page 39.
+https://literature.hpcalc.org/community/hp15c-afh-en.pdf
